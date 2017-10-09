@@ -1,8 +1,8 @@
 var ConsentDirectives = artifacts.require("./ConsentDirectives.sol");
-var ConsentDirectiveFactory = artifacts.require("./ConsentDirectiveFactory.sol");
+var MediatorFactory = artifacts.require("./MediatorFactory.sol");
 
 module.exports = function(deployer) {
   deployer.deploy(ConsentDirectives);
-  deployer.link(ConsentDirectives, ConsentDirectiveFactory);
-  deployer.deploy(ConsentDirectiveFactory);
+  deployer.link(ConsentDirectives, MediatorFactory);
+  deployer.deploy(MediatorFactory);
 };
