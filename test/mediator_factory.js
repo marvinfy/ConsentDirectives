@@ -1,5 +1,5 @@
 var MediatorFactory = artifacts.require("./MediatorFactory.sol");
-
+var no_address = "0x0000000000000000000000000000000000000000";
 contract('MediatorFactory', function(accounts) {
 
   it("should have no ConsentDirectives for any account", function(done) {
@@ -7,7 +7,7 @@ contract('MediatorFactory', function(accounts) {
       for (var i = 0; i < accounts.size; i++)
       {
         factory.GetConsentDirectives({from: accounts[i]}).then(function(address) {
-          assert.equal(address, "0x0000000000000000000000000000000000000000", "Instance found");
+          assert.equal(address, no_address, "Instance found");
         });
       }
       done();
@@ -25,7 +25,7 @@ contract('MediatorFactory', function(accounts) {
       return factory.GetConsentDirectives();
     }).then(function(result) {
       //console.log("Address - ", result);
-      assert(result != "0x0000000000000000000000000000000000000000", "Instance not created");
+      assert(result != no_address, "Instance not created");
       address = result;
       return factory.GetConsentDirectives();
     }).then(function(result) {
@@ -34,6 +34,20 @@ contract('MediatorFactory', function(accounts) {
       address = result;
       done();
     });
+  });
+
+  it("should have no ConsentDirectives after deletion", function(done) {
+    var factory;
+
+    MediatorFactory.deployed().then(function(instance) {
+      factory = instance;
+      factory.DeleteConsentDirectives();
+    }).then(function() {
+      return factory.GetConsentDirectives();
+    }).then(function(result) {
+      assert.equal(result, no_address, "Instance is not null");
+      done();
+    })
   });
 
 

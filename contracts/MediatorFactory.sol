@@ -7,8 +7,6 @@ import "./ConsentDirectives.sol";
 
 contract MediatorFactory {
 
-  //modifier  OwnerOnly {if(msg.sender != owner) /**throw**/ revert(); else _;}
-
   // Maps accounts to their respective ConsentDirectives instance
   mapping(address => address) mMap;
 
@@ -16,9 +14,9 @@ contract MediatorFactory {
     return address(mMap[msg.sender]);
   }
 
-  /*function GetConsentDirectives(address account) constant returns (address) {
-    return address(mMap[account]);    
-  }*/
+  function GetConsentDirectivesFrom(address account) constant returns (address) {
+    return address(mMap[account]);
+  }
 
   function CreateConsentDirectives() {
     if (mMap[msg.sender] != 0) {
@@ -26,6 +24,10 @@ contract MediatorFactory {
     }
 
     mMap[msg.sender] = new ConsentDirectives();
+  }
+
+  function DeleteConsentDirectives() {
+    delete mMap[msg.sender];
   }
 
   function HasConsent() constant returns (address) {
