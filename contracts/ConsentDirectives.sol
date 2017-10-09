@@ -21,7 +21,13 @@ contract ConsentDirectives {
   ConsentDirective[] directives;
 */
 
+  address private mOwner;
+
   function ConsentDirectives() {
-    // constructor
+    mOwner = msg.sender;
+  }
+
+  function GetOwner() constant returns (address owner) {
+    owner = mOwner;
   }
 }
