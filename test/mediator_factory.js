@@ -1,5 +1,6 @@
 var MediatorFactory = artifacts.require("./MediatorFactory.sol");
 var no_address = "0x0000000000000000000000000000000000000000";
+
 contract('MediatorFactory', function(accounts) {
 
   it("should have no ConsentDirectives for any account", function(done) {
@@ -49,7 +50,6 @@ contract('MediatorFactory', function(accounts) {
       done();
     })
   });
-
 
 });
 
