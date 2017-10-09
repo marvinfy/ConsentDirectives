@@ -1,13 +1,13 @@
-var MediatorFactory = artifacts.require("./MediatorFactory.sol");
+var PatientFactory = artifacts.require("./PatientFactory.sol");
 var no_address = "0x0000000000000000000000000000000000000000";
 
-contract('MediatorFactory', function(accounts) {
+contract('PatientFactory', function(accounts) {
 
-  it("should have no ConsentDirectives for any account", function(done) {
-    MediatorFactory.deployed().then(function(factory) {
+  it("should have no Patient instances for any account", function(done) {
+    PatientFactory.deployed().then(function(factory) {
       for (var i = 0; i < accounts.size; i++)
       {
-        factory.GetConsentDirectives({from: accounts[i]}).then(function(address) {
+        factory.GetPatient({from: accounts[i]}).then(function(address) {
           assert.equal(address, no_address, "Instance found");
         });
       }
@@ -15,20 +15,20 @@ contract('MediatorFactory', function(accounts) {
     });
   });
 
-  it("should create only one ConsentDirectives instance per account", function(done) {
+  it("should create only one Patient instance per account", function(done) {
     var factory;
     var address;
     
-    MediatorFactory.deployed().then(function(instance) {
+    PatientFactory.deployed().then(function(instance) {
       factory = instance;
-      factory.CreateConsentDirectives();
+      factory.CreatePatient();
     }).then(function() {
-      return factory.GetConsentDirectives();
+      return factory.GetPatient();
     }).then(function(result) {
       //console.log("Address - ", result);
       assert(result != no_address, "Instance not created");
       address = result;
-      return factory.GetConsentDirectives();
+      return factory.GetPatient();
     }).then(function(result) {
       //console.log("Address - ", result);
       assert(result == address, "Addresses differ");
@@ -37,14 +37,14 @@ contract('MediatorFactory', function(accounts) {
     });
   });
 
-  it("should have no ConsentDirectives after deletion", function(done) {
+  it("should have no Patient after deletion", function(done) {
     var factory;
 
-    MediatorFactory.deployed().then(function(instance) {
+    PatientFactory.deployed().then(function(instance) {
       factory = instance;
-      factory.DeleteConsentDirectives();
+      factory.DeletePatient();
     }).then(function() {
-      return factory.GetConsentDirectives();
+      return factory.GetPatient();
     }).then(function(result) {
       assert.equal(result, no_address, "Instance is not null");
       done();

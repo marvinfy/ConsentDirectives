@@ -1,8 +1,13 @@
-var ConsentDirectives = artifacts.require("./ConsentDirectives.sol");
-var MediatorFactory = artifacts.require("./MediatorFactory.sol");
+var ConsentDirective = artifacts.require("./ConsentDirective.sol");
+var Patient = artifacts.require("./Patient.sol");
+var PatientFactory = artifacts.require("./PatientFactory.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy(ConsentDirectives);
-  deployer.link(ConsentDirectives, MediatorFactory);
-  deployer.deploy(MediatorFactory);
+  deployer.deploy(ConsentDirective);
+
+  deployer.link(ConsentDirective, Patient);
+  deployer.deploy(Patient);
+
+  deployer.link(Patient, PatientFactory);
+  deployer.deploy(PatientFactory);
 };
