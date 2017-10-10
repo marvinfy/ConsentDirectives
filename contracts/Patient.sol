@@ -9,4 +9,8 @@ contract Patient {
   function Patient() {
     mOwner = msg.sender;
   }
+
+  
+
+
 }
