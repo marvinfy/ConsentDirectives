@@ -1,54 +1,41 @@
 var PatientFactory = artifacts.require("./PatientFactory.sol");
-var no_address = "0x0000000000000000000000000000000000000000";
+var Patient = artifacts.require("./Patient.sol");
 
 contract('PatientFactory', function(accounts) {
 
-  it("should have no Patient instances for any account", function(done) {
-    PatientFactory.deployed().then(function(factory) {
-      for (var i = 0; i < accounts.size; i++)
-      {
-        factory.GetPatient({from: accounts[i]}).then(function(address) {
-          assert.equal(address, no_address, "Instance found");
-        });
-      }
+  it("should create with the right account address", function(done) {
+    var patientFactory;
+    var patient;
+
+    PatientFactory.deployed().then(function(instance) {
+      patientFactory = instance;
+      patientFactory.Create({from:accounts[0]});
+    }).then(function() {
+      // .call() executes locally (no transaction gets created)
+      return patientFactory.GetAddress.call({from: accounts[0]});
+    }).then(function(address) {
+      patient = Patient.at(address);
+      return patient.GetOwner.call();
+    }).then(function(address) {
+      assert.equal(address, accounts[0]);
       done();
     });
   });
 
-  it("should create only one Patient instance per account", function(done) {
-    var factory;
-    var address;
-    
+  it("should delete and leave no traces", function(done) {
+    var patientFactory;
+    var patient;
+    var null_address = "0x0000000000000000000000000000000000000000";
+
     PatientFactory.deployed().then(function(instance) {
-      factory = instance;
-      factory.CreatePatient();
+      patientFactory = instance;
+      patientFactory.Delete({from:accounts[0]});
     }).then(function() {
-      return factory.GetPatient();
-    }).then(function(result) {
-      //console.log("Address - ", result);
-      assert(result != no_address, "Instance not created");
-      address = result;
-      return factory.GetPatient();
-    }).then(function(result) {
-      //console.log("Address - ", result);
-      assert(result == address, "Addresses differ");
-      address = result;
+      return patientFactory.GetAddress.call({from: accounts[0]});
+    }).then(function(address) {
+      assert.equal(address, null_address);
       done();
     });
-  });
-
-  it("should have no Patient after deletion", function(done) {
-    var factory;
-
-    PatientFactory.deployed().then(function(instance) {
-      factory = instance;
-      factory.DeletePatient();
-    }).then(function() {
-      return factory.GetPatient();
-    }).then(function(result) {
-      assert.equal(result, no_address, "Instance is not null");
-      done();
-    })
   });
 
 });

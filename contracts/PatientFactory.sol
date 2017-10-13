@@ -8,28 +8,24 @@ import "./Patient.sol";
 contract PatientFactory {
 
   // Maps accounts to its respective Patient instance
-  mapping(address => address) mMap;
+  mapping(address => Patient) mMap;
 
-  // Gets the Patient instance associated with the sender
-  function GetPatient() constant returns (address) {
-    return address(mMap[msg.sender]);
+  function PatientFactory() {
   }
 
-  // Gets the Patient instance associated with the address parameter
-  function GetPatientFor(address account) constant returns (address) {
-    return address(mMap[account]);
-  }
-
-  function CreatePatient() {
-    if (mMap[msg.sender] != 0) {
-      return;
+  function Create() {
+    if (address(mMap[msg.sender]) == 0) {
+      mMap[msg.sender] = new Patient(msg.sender);
     }
-
-    mMap[msg.sender] = new Patient();
   }
 
-  function DeletePatient() {
+  function Delete() {
     delete mMap[msg.sender];
+  }
+
+  // Gets the address of the Patient instance associated with the caller
+  function GetAddress() constant returns (address) {
+    return address(mMap[msg.sender]);
   }
 
 }
