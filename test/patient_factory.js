@@ -5,7 +5,7 @@ var null_address = "0x0000000000000000000000000000000000000000";
 
 contract('PatientFactory', function(accounts) {
 
-  it("should create a Patient instance with the right owner address", function(done) {
+  it("should make a Patient instance with the right owner address", function(done) {
     var patientFactory;
     var account = accounts[0];
 
@@ -25,7 +25,7 @@ contract('PatientFactory', function(accounts) {
     });
   });
 
-  it("should not create two Patient instances upon calling MakeInstance twice", function(done) {
+  it("should not make two Patient instances upon calling MakeInstance twice", function(done) {
     var patientFactory;
     var patientAddress1;
     var patientAddress2;
@@ -67,6 +67,8 @@ contract('PatientFactory', function(accounts) {
     }).then(function(address) {
       assert.equal(address, account);
       patientFactory.DeletePatient({from: account});
+    }).then(function() {
+      patientFactory.DeletePatient({from: account}); // Intentional double delete
     }).then(function() {
       return patientFactory.GetPatientAddress.call({from: account});
     }).then(function(address) {
