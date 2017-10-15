@@ -7,6 +7,7 @@ contract ConsentDirective {
     Delegate  // Delegate authority to consent on his/her behalf
   }
 
+/*
   // TODO store as bytes to allow multiple options (bitwise operations)
   enum RecordType {
     Any,
@@ -38,14 +39,14 @@ contract ConsentDirective {
     Emergency,
     RecordCorrection,
     CaseManagement
-  }
+  }*/
 
   address private mWho; // Who the patient is consenting or delegating authority to consent on his behalf
-  DirectiveType private mDirectiveType; // Consent or Delegate
+  //DirectiveType private mDirectiveType; // Consent or Delegate
 
-  function ConsentDirective(address who, DirectiveType dt) {
+  function ConsentDirective(address who /*, DirectiveType dt*/) {
     mWho = who;
-    mDirectiveType = dt;
+    //mDirectiveType = dt;
   }
 
   /*

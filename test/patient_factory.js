@@ -7,17 +7,19 @@ contract('PatientFactory', function(accounts) {
 
   it("should make a Patient instance with the right owner address", function(done) {
     var patientFactory;
+    var patient;
     var account = accounts[0];
 
     PatientFactory.deployed().then(function(instance) {
       patientFactory = instance;
-      patientFactory.MakePatient({from: account});
+      patientFactory.MakePatient.sendTransaction({from: account});
     }).then(function() {
       // .call() executes locally (no transaction gets created)
       return patientFactory.GetPatientAddress.call({from: account});
     }).then(function(address) {
       return Patient.at(address);
-    }).then(function(patient) {
+    }).then(function(instance) {
+      patient = instance;
       return patient.GetOwnerAddress.call();
     }).then(function(address) {
       assert.equal(address, account);
@@ -36,7 +38,7 @@ contract('PatientFactory', function(accounts) {
       return patientFactory.GetPatientAddress.call({from: account});
     }).then(function(address) {
       patientAddress1 = address;
-      patientFactory.MakePatient({from: account});
+      patientFactory.MakePatient.sendTransaction({from: account});
     }).then(function() {
       return patientFactory.GetPatientAddress.call({from: account});
     }).then(function(address) {
@@ -66,9 +68,9 @@ contract('PatientFactory', function(accounts) {
       return patient.GetOwnerAddress.call();
     }).then(function(address) {
       assert.equal(address, account);
-      patientFactory.DeletePatient({from: account});
+      patientFactory.DeletePatient.sendTransaction({from: account});
     }).then(function() {
-      patientFactory.DeletePatient({from: account}); // Intentional double delete
+      patientFactory.DeletePatient.sendTransaction({from: account}); // Intentional double delete
     }).then(function() {
       return patientFactory.GetPatientAddress.call({from: account});
     }).then(function(address) {
@@ -78,7 +80,3 @@ contract('PatientFactory', function(accounts) {
   });
 
 });
-
-function sleep (time) {
-  return new Promise((resolve) => setTimeout(resolve, time));
-}
