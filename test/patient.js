@@ -30,15 +30,18 @@ contract('Patient', function(accounts) {
       return patient.GetConsentDirectiveCount.call();
     }).then(function(count) {
       assert(count.toNumber() == 0);
+      return patient.GetConsentDirectives.call();
+    }).then(function(instances) {
+      assert(instances.length == 0);
       done();
     });
   });
 
-
   it("should allow Patient to add an instance of ConsentDirective", function(done) {
     var patientFactory;
-    var patient_account = accounts[1];
     var patient;
+    var patient_account = accounts[0];
+    var doctor_account = accounts[1];
 
     PatientFactory.deployed().then(function(instance) {
       patientFactory = instance;
@@ -49,9 +52,12 @@ contract('Patient', function(accounts) {
       return Patient.at(address);
     }).then(function(instance) {
       patient = instance;
-      return patient.GetConsentDirectiveCount.call();
-    }).then(function(count) {
-      assert(count.toNumber() == 0);
+      var cd = new ConsentDirective(doctor_account, 0);
+      return patient.AddConsentDirective.sendTransaction(cd.address, {from:patient_account});
+    }).then(function() {
+      return patient.GetIt.call();
+    }).then(function(address) {
+      assert(address == doctor_account);
       done();
     });
   });

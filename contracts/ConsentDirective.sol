@@ -42,11 +42,19 @@ contract ConsentDirective {
   }*/
 
   address private mWho; // Who the patient is consenting or delegating authority to consent on his behalf
-  //DirectiveType private mDirectiveType; // Consent or Delegate
+  DirectiveType private mDirectiveType; // Consent or Delegate
 
-  function ConsentDirective(address who /*, DirectiveType dt*/) {
+  function GetWho() constant returns(address) {
+    return mWho;
+  }
+
+  function GetDirectiveType() constant returns(uint8) {
+    return uint8(mDirectiveType);
+  }
+
+  function ConsentDirective(address who, DirectiveType dt) {
     mWho = who;
-    //mDirectiveType = dt;
+    mDirectiveType = dt;
   }
 
   /*

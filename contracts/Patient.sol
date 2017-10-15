@@ -19,9 +19,16 @@ contract Patient {
     return mConsentDirectives.length;
   }
 
+  function GetConsentDirectives() constant returns(ConsentDirective[]) {
+    return mConsentDirectives;
+  }
 
- /*
-  function HasAuthorityToConsent(address cd) constant returns(bool) {
+  function GetIt() constant returns(address) {
+
+    return address(mConsentDirectives[0]);
+  }
+
+  function HasAuthorityToConsent(ConsentDirective cd) constant returns(bool) {
     if (msg.sender == mOwner) {
       return true;
     }
@@ -30,15 +37,13 @@ contract Patient {
     return false;
   }
 
-  function AddConsentDirective(address cd) returns(bool) {
+  function AddConsentDirective(ConsentDirective cd) {
     if (HasAuthorityToConsent(cd)) {
       mConsentDirectives.push(cd);
-      return true;
     }
-
-    return false;
-  }*/
-
-
+    else {
+      revert();
+    }
+  } 
 
 }
