@@ -24,8 +24,8 @@ contract PatientFactory {
   }
 
   // Gets the address of the Patient instance associated with the caller
-  function GetPatientAddress() constant returns (address) {
-    return mMap[msg.sender]; // address(mMap[msg.sender]) works as well
+  function GetPatient() constant returns (Patient) {
+    return mMap[msg.sender];
   }
 
 }

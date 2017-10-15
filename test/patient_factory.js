@@ -15,7 +15,7 @@ contract('PatientFactory', function(accounts) {
       patientFactory.MakePatient.sendTransaction({from: account});
     }).then(function() {
       // .call() executes locally (no transaction gets created)
-      return patientFactory.GetPatientAddress.call({from: account});
+      return patientFactory.GetPatient.call({from: account});
     }).then(function(address) {
       return Patient.at(address);
     }).then(function(instance) {
@@ -35,12 +35,12 @@ contract('PatientFactory', function(accounts) {
 
     PatientFactory.deployed().then(function(instance) {
       patientFactory = instance;
-      return patientFactory.GetPatientAddress.call({from: account});
+      return patientFactory.GetPatient.call({from: account});
     }).then(function(address) {
       patientAddress1 = address;
       patientFactory.MakePatient.sendTransaction({from: account});
     }).then(function() {
-      return patientFactory.GetPatientAddress.call({from: account});
+      return patientFactory.GetPatient.call({from: account});
     }).then(function(address) {
       patientAddress2 = address;
       return Patient.at(address);
@@ -60,7 +60,7 @@ contract('PatientFactory', function(accounts) {
 
     PatientFactory.deployed().then(function(instance) {
       patientFactory = instance;
-      return patientFactory.GetPatientAddress.call({from: account});
+      return patientFactory.GetPatient.call({from: account});
     }).then(function(address) {
       assert(address != null_address);
       return Patient.at(address);
@@ -72,7 +72,7 @@ contract('PatientFactory', function(accounts) {
     }).then(function() {
       patientFactory.DeletePatient.sendTransaction({from: account}); // Intentional double delete
     }).then(function() {
-      return patientFactory.GetPatientAddress.call({from: account});
+      return patientFactory.GetPatient.call({from: account});
     }).then(function(address) {
       assert.equal(address, null_address);
       done();

@@ -22,7 +22,7 @@ contract('Patient', function(accounts) {
     }).then(function() {
       patientFactory.MakePatient.sendTransaction({from: account});
     }).then(function() {
-      return patientFactory.GetPatientAddress.call({from: account});
+      return patientFactory.GetPatient.call({from: account});
     }).then(function(address) {
       return Patient.at(address);
     }).then(function(instance) {
@@ -44,7 +44,7 @@ contract('Patient', function(accounts) {
       patientFactory = instance;
       patientFactory.MakePatient.sendTransaction({from: patient_account});
     }).then(function() {
-      return patientFactory.GetPatientAddress.call({from: patient_account});
+      return patientFactory.GetPatient.call({from: patient_account});
     }).then(function(address) {
       return Patient.at(address);
     }).then(function(instance) {
