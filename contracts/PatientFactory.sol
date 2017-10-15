@@ -13,18 +13,18 @@ contract PatientFactory {
   function PatientFactory() {
   }
 
-  function Create() {
+  function MakePatient() {
     if (address(mMap[msg.sender]) == 0) {
       mMap[msg.sender] = new Patient(msg.sender);
     }
   }
 
-  function Delete() {
+  function DeletePatient() {
     delete mMap[msg.sender];
   }
 
   // Gets the address of the Patient instance associated with the caller
-  function GetAddress() constant returns (address) {
+  function GetPatientAddress() constant returns (address) {
     return mMap[msg.sender]; // address(mMap[msg.sender]) works as well
   }
 

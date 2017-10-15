@@ -1,6 +1,8 @@
 var PatientFactory = artifacts.require("./PatientFactory.sol");
 var Patient = artifacts.require("./Patient.sol");
 
+var null_address = "0x0000000000000000000000000000000000000000";
+
 contract('PatientFactory', function(accounts) {
 
   it("should create a Patient instance with the right owner address", function(done) {
@@ -9,10 +11,10 @@ contract('PatientFactory', function(accounts) {
 
     PatientFactory.deployed().then(function(instance) {
       patientFactory = instance;
-      patientFactory.Create({from: account});
+      patientFactory.MakePatient({from: account});
     }).then(function() {
       // .call() executes locally (no transaction gets created)
-      return patientFactory.GetAddress.call({from: account});
+      return patientFactory.GetPatientAddress.call({from: account});
     }).then(function(address) {
       return Patient.at(address);
     }).then(function(patient) {
@@ -23,34 +25,50 @@ contract('PatientFactory', function(accounts) {
     });
   });
 
-  it("should not create two instances upon calling Create twice", function(done) {
+  it("should not create two Patient instances upon calling MakeInstance twice", function(done) {
     var patientFactory;
+    var patientAddress1;
+    var patientAddress2;
     var account = accounts[0];
 
     PatientFactory.deployed().then(function(instance) {
       patientFactory = instance;
+      return patientFactory.GetPatientAddress.call({from: account});
+    }).then(function(address) {
+      patientAddress1 = address;
+      patientFactory.MakePatient({from: account});
+    }).then(function() {
+      return patientFactory.GetPatientAddress.call({from: account});
+    }).then(function(address) {
+      patientAddress2 = address;
+      return Patient.at(address);
+    }).then(function(patient) {
+      return patient.GetOwnerAddress.call();
+    }).then(function(address) {
+      assert(address == account);
+      assert(patientAddress1 != null_address);
+      assert(patientAddress1 == patientAddress2);
       done();
     });
   });
 
   it("should correctly delete the previously created Patient instance", function(done) {
     var patientFactory;
-    var patient;
     var account = accounts[0];
-    var null_address = "0x0000000000000000000000000000000000000000";
 
     PatientFactory.deployed().then(function(instance) {
       patientFactory = instance;
-      return patientFactory.GetAddress.call({from: account});
+      return patientFactory.GetPatientAddress.call({from: account});
     }).then(function(address) {
+      assert(address != null_address);
       return Patient.at(address);
     }).then(function(patient) {
       return patient.GetOwnerAddress.call();
     }).then(function(address) {
       assert.equal(address, account);
-      patientFactory.Delete({from: account});
+      patientFactory.DeletePatient({from: account});
     }).then(function() {
-      return patientFactory.GetAddress.call({from: account});
+      return patientFactory.GetPatientAddress.call({from: account});
     }).then(function(address) {
       assert.equal(address, null_address);
       done();
