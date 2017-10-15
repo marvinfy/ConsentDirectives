@@ -16,4 +16,17 @@ contract Patient {
     return mOwner;
   }
 
+  function AddConsentDirective(ConsentDirective cd) returns(bool) {
+    if (msg.sender == mOwner) {
+      mConsentDirectives.push(cd);
+      return true;
+    }
+    else {
+      // Verify if msg.sender has authority to consent
+      return false;
+    }
+  }
+
+
+
 }

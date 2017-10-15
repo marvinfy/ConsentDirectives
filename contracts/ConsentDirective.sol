@@ -4,7 +4,7 @@ contract ConsentDirective {
 
   enum DirectiveType {
     Consent,  // Consent
-    Delegate  // Delegate authority to consent
+    Delegate  // Delegate authority to consent on his/her behalf
   }
 
   // TODO store as bytes to allow multiple options (bitwise operations)
@@ -41,24 +41,21 @@ contract ConsentDirective {
   }
 
   address private mWho; // Who the patient is consenting or delegating authority to consent on his behalf
-
   DirectiveType private mDirectiveType; // Consent or Delegate
 
+  function ConsentDirective(address who, DirectiveType dt) {
+    mWho = who;
+    mDirectiveType = dt;
+  }
+
+  /*
   RecordType private mRecordType;
   address private mSpecificRecord; // Only for RecordType::Specific
-
   address[] mOrigins; // Empty array represents Any origin
-
   AccessType private mAccessType;
-
   Why private mWhy;
-
   // TODO expiry date
-
-  
-
-
-
+  */
   
 }
 

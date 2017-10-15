@@ -1,18 +1,21 @@
 var PatientFactory = artifacts.require("./PatientFactory.sol");
 var Patient = artifacts.require("./Patient.sol");
+var ConsentDirective = artifacts.require("./ConsentDirective.sol");
 
-var no_address = "0x0000000000000000000000000000000000000000";
+contract('Patient', function(accounts) {
 
-contract('PatientFactory', function(accounts) {
+  assert(accounts.length >= 2, "Not enough accounts available for testing");
+
   var factory;
-  var patient1; // associated with account[0]
-  var patient2; // associated with account[1]
-  var dr1 = accounts[2];
-  var dr2 = accounts[3];
+  var patient = accounts[0];
+  var doctor = accounts[1];
 
-  it("should create account for patient 1", function(done) {
-
-    assert(accounts.length >= 2, "Not enough accounts available");
+  it("should allow Patient to create instances of ConsentDirective for their doctor", function(done) {
+    PatientFactory.deployed().then(function(instance) {
+      factory = instance;
+      done();
+    });
+    
 
     /*
     PatientFactory.deployed().then(function(instance) {
@@ -64,6 +67,5 @@ contract('PatientFactory', function(accounts) {
 
 
     });*/
-    done();
   });
 });
