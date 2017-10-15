@@ -12,7 +12,7 @@ contract Patient {
     mOwner = owner;
   }
 
-  function GetOwner() returns(address) {
+  function GetOwnerAddress() returns(address) {
     return mOwner;
   }
 

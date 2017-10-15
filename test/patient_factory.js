@@ -3,35 +3,37 @@ var Patient = artifacts.require("./Patient.sol");
 
 contract('PatientFactory', function(accounts) {
 
-  it("should create with the right account address", function(done) {
+  it("should create Patient instances with the right owner address", function(done) {
     var patientFactory;
     var patient;
+    var account = accounts[0];
 
     PatientFactory.deployed().then(function(instance) {
       patientFactory = instance;
-      patientFactory.Create({from:accounts[0]});
+      patientFactory.Create({from:account});
     }).then(function() {
       // .call() executes locally (no transaction gets created)
-      return patientFactory.GetAddress.call({from: accounts[0]});
+      return patientFactory.GetAddress.call({from: account});
     }).then(function(address) {
       patient = Patient.at(address);
-      return patient.GetOwner.call();
+      return patient.GetOwnerAddress.call();
     }).then(function(address) {
-      assert.equal(address, accounts[0]);
+      assert.equal(address, account);
       done();
     });
   });
 
-  it("should delete and leave no traces", function(done) {
+  it("should delete Patient instances", function(done) {
     var patientFactory;
     var patient;
+    var account = accounts[0];
     var null_address = "0x0000000000000000000000000000000000000000";
 
     PatientFactory.deployed().then(function(instance) {
       patientFactory = instance;
-      patientFactory.Delete({from:accounts[0]});
+      patientFactory.Delete({from:account});
     }).then(function() {
-      return patientFactory.GetAddress.call({from: accounts[0]});
+      return patientFactory.GetAddress.call({from: account});
     }).then(function(address) {
       assert.equal(address, null_address);
       done();
