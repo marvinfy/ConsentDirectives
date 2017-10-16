@@ -48,8 +48,8 @@ contract ConsentDirective {
     return mWho;
   }
 
-  function GetDirectiveType() constant returns(uint8) {
-    return uint8(mDirectiveType);
+  function GetDirectiveType() constant returns(DirectiveType) {
+    return mDirectiveType;
   }
 
   function ConsentDirective(address who, DirectiveType dt) {

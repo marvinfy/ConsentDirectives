@@ -25,6 +25,15 @@ contract Patient {
     }
 
     // TODO: Loop through mConsentDirectives and see if msg.sender...
+
+    for (uint i = 0; i < mConsentDirectives.length; i++) {
+      ConsentDirective _cd = mConsentDirectives[i];
+      if (_cd.GetWho() == msg.sender && _cd.GetDirectiveType() == ConsentDirective.DirectiveType.Delegate) {
+          // TODO move to ConsentDirective class?
+      }
+    }
+
+
     return false;
   }
 
