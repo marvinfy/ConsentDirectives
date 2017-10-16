@@ -2,10 +2,10 @@ pragma solidity ^0.4.4;
 
 contract ConsentDirective {
 
-  enum DirectiveType {
+  /*enum DirectiveType {
     Consent,  // Consent
     Delegate  // Delegate authority to consent on his/her behalf
-  }
+  }*/
 
 /*
   // TODO store as bytes to allow multiple options (bitwise operations)
@@ -41,16 +41,23 @@ contract ConsentDirective {
     CaseManagement
   }*/
 
-  address public Who; // Who the patient is consenting or delegating authority to consent on his behalf
-  DirectiveType public Type; // Consent or Delegate
+  address public Who; // Who the patient is giving consent
+  function SetWho(address who) { Who = who; }
 
-  function ConsentDirective(address who, DirectiveType directiveType) {
+  bool public DelegateAuthority; // Whether this delegates authority to consent on the Patient's behalf
+  function SetDelegateAuthority(bool value) { DelegateAuthority = value; }
+
+  function ConsentDirective(address who, bool delegateAuthority) {
     Who = who;
-    Type = directiveType;
+    DelegateAuthority = delegateAuthority;
   }
 
   function Encompasses(ConsentDirective other) returns(bool) {
-    return false;
+    bool result = true;
+    result = result && (Who == other.Who());
+
+
+    return result;
   }
 
   /*

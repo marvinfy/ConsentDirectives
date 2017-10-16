@@ -46,7 +46,7 @@ contract('Patient', function(accounts) {
       return patientFactory.GetPatient.call({from: patient_account});
     }).then(function(address) {
       patient = Patient.at(address);
-      return ConsentDirective.new(doctor_account, DirectiveType.Consent);
+      return ConsentDirective.new(doctor_account, true);
     }).then(function(instance) {
       cd1 = instance;
       return patient.AddConsentDirective.sendTransaction(cd1.address, {from: patient_account});
@@ -59,9 +59,9 @@ contract('Patient', function(accounts) {
       return cd2.Who.call();
     }).then(function(address) {
       assert(address == doctor_account);
-      return cd2.Type.call();
-    }).then(function(type) {
-      assert(type == DirectiveType.Consent);
+      return cd2.DelegateAuthority.call();
+    }).then(function(delegateAuthority) {
+      assert(delegateAuthority == true);
       done();
     });
   });
