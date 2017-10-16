@@ -37,32 +37,38 @@ contract('Patient', function(accounts) {
   it("should allow Patient to add an instance of ConsentDirective", function(done) {
     var patientFactory;
     var patient;
-    var directive1, directive2;
+    var cdFromNew, cdFromGetAt, cdFromGetAll;
     var patient_account = accounts[0];
     var doctor_account = accounts[1];
 
+
     PatientFactory.deployed().then(function(instance) {
       patientFactory = instance;
-      patientFactory.MakePatient.sendTransaction({from: patient_account});
-    }).then(function() {
       return patientFactory.GetPatient.call({from: patient_account});
     }).then(function(address) {
       patient = Patient.at(address);
-      return ConsentDirective.new(doctor_account, 0);
+      return ConsentDirective.new(doctor_account, DirectiveType.Consent);
     }).then(function(instance) {
-      directive1 = instance;
-      return patient.AddConsentDirective.sendTransaction(directive1.address, {from: patient_account});
+      cdFromNew = instance;
+      return patient.AddConsentDirective.sendTransaction(cdFromNew.address, {from: patient_account});
     }).then(function() {
       return patient.GetConsentDirectiveCount.call();
     }).then(function(count) {
-      assert(count >= 1);
+      assert(count == 1);
       return patient.GetConsentDirectiveAt.call(0);
     }).then(function(address) {
-      directive2 = ConsentDirective.at(address);
-      assert(directive1.address == directive2.address);
-      return directive2.GetWho.call();
+      cdFromGetAt = ConsentDirective.at(address);
+      return patient.GetConsentDirectives.call();
+    }).then(function(addresses) {
+      assert(addresses.length == 1);
+      cdFromGetAll = ConsentDirective.at(addresses[0]);
+
+      assert(cdFromNew.address == cdFromGetAt.address);
+      assert(cdFromNew.address == cdFromGetAll.address);
+
+      return cdFromGetAll.GetWho.call();
     }).then(function(address) {
-      assert(address == doctor_account);
+      assert(address == doctor_account);     
       done();
     });
   });
