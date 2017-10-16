@@ -55,11 +55,13 @@ contract('Patient', function(accounts) {
     }).then(function(addresses) {
       assert(addresses.length == 1);
       cd2 = ConsentDirective.at(addresses[0]);
-      assert(cd1.address == cd2.address);     
-      return cd2.GetWho.call();
+      assert(cd1.address == cd2.address);
+      return cd2.Who.call();
     }).then(function(address) {
+      console.log(address);
+      console.log(doctor_account);
       assert(address == doctor_account);
-      return cd2.GetDirectiveType.call();
+      return cd2.Type.call();
     }).then(function(type) {
       assert(type == DirectiveType.Consent);
       done();
