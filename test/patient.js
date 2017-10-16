@@ -58,8 +58,6 @@ contract('Patient', function(accounts) {
       assert(cd1.address == cd2.address);
       return cd2.Who.call();
     }).then(function(address) {
-      console.log(address);
-      console.log(doctor_account);
       assert(address == doctor_account);
       return cd2.Type.call();
     }).then(function(type) {
