@@ -19,13 +19,12 @@ contract Patient {
     return mConsentDirectives.length;
   }
 
-  function GetConsentDirectives() constant returns(ConsentDirective[]) {
-    return mConsentDirectives;
+  function GetConsentDirectiveAt(uint index) constant returns(address) {
+    return address(mConsentDirectives[index]);
   }
 
-  function GetIt() constant returns(address) {
-
-    return address(mConsentDirectives[0]);
+  function GetConsentDirectives() constant returns(ConsentDirective[]) {
+    return mConsentDirectives;
   }
 
   function HasAuthorityToConsent(ConsentDirective cd) constant returns(bool) {

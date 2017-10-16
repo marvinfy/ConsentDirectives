@@ -30,9 +30,6 @@ contract('Patient', function(accounts) {
       return patient.GetConsentDirectiveCount.call();
     }).then(function(count) {
       assert(count.toNumber() == 0);
-      return patient.GetConsentDirectives.call();
-    }).then(function(instances) {
-      assert(instances.length == 0);
       done();
     });
   });
@@ -40,6 +37,7 @@ contract('Patient', function(accounts) {
   it("should allow Patient to add an instance of ConsentDirective", function(done) {
     var patientFactory;
     var patient;
+    var directive1, directive2;
     var patient_account = accounts[0];
     var doctor_account = accounts[1];
 
@@ -49,13 +47,20 @@ contract('Patient', function(accounts) {
     }).then(function() {
       return patientFactory.GetPatient.call({from: patient_account});
     }).then(function(address) {
-      return Patient.at(address);
+      patient = Patient.at(address);
+      return ConsentDirective.new(doctor_account, 0);
     }).then(function(instance) {
-      patient = instance;
-      var cd = new ConsentDirective(doctor_account, 0);
-      return patient.AddConsentDirective.sendTransaction(cd.address, {from:patient_account});
+      directive1 = instance;
+      return patient.AddConsentDirective.sendTransaction(directive1.address, {from: patient_account});
     }).then(function() {
-      return patient.GetIt.call();
+      return patient.GetConsentDirectiveCount.call();
+    }).then(function(count) {
+      assert(count >= 1);
+      return patient.GetConsentDirectiveAt.call(0);
+    }).then(function(address) {
+      directive2 = ConsentDirective.at(address);
+      assert(directive1.address == directive2.address);
+      return directive2.GetWho.call();
     }).then(function(address) {
       assert(address == doctor_account);
       done();
