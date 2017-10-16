@@ -11,16 +11,8 @@ contract Patient {
     mConsentDirectives = new ConsentDirective[](0);
   }
 
-  function GetOwnerAddress() constant returns(address) {
+  function GetOwner() constant returns(address) {
     return mOwner;
-  }
-
-  function GetConsentDirectiveCount() constant returns(uint) {
-    return mConsentDirectives.length;
-  }
-
-  function GetConsentDirectiveAt(uint index) constant returns(address) {
-    return address(mConsentDirectives[index]);
   }
 
   function GetConsentDirectives() constant returns(ConsentDirective[]) {

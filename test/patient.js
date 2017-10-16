@@ -27,9 +27,9 @@ contract('Patient', function(accounts) {
       return Patient.at(address);
     }).then(function(instance) {
       patient = instance;
-      return patient.GetConsentDirectiveCount.call();
-    }).then(function(count) {
-      assert(count.toNumber() == 0);
+      return patient.GetConsentDirectives.call();
+    }).then(function(addresses) {
+      assert(addresses.length == 0);
       done();
     });
   });
@@ -37,10 +37,9 @@ contract('Patient', function(accounts) {
   it("should allow Patient to add an instance of ConsentDirective", function(done) {
     var patientFactory;
     var patient;
-    var cdFromNew, cdFromGetAt, cdFromGetAll;
+    var cd1, cd2;
     var patient_account = accounts[0];
     var doctor_account = accounts[1];
-
 
     PatientFactory.deployed().then(function(instance) {
       patientFactory = instance;
@@ -49,26 +48,20 @@ contract('Patient', function(accounts) {
       patient = Patient.at(address);
       return ConsentDirective.new(doctor_account, DirectiveType.Consent);
     }).then(function(instance) {
-      cdFromNew = instance;
-      return patient.AddConsentDirective.sendTransaction(cdFromNew.address, {from: patient_account});
+      cd1 = instance;
+      return patient.AddConsentDirective.sendTransaction(cd1.address, {from: patient_account});
     }).then(function() {
-      return patient.GetConsentDirectiveCount.call();
-    }).then(function(count) {
-      assert(count == 1);
-      return patient.GetConsentDirectiveAt.call(0);
-    }).then(function(address) {
-      cdFromGetAt = ConsentDirective.at(address);
       return patient.GetConsentDirectives.call();
     }).then(function(addresses) {
       assert(addresses.length == 1);
-      cdFromGetAll = ConsentDirective.at(addresses[0]);
-
-      assert(cdFromNew.address == cdFromGetAt.address);
-      assert(cdFromNew.address == cdFromGetAll.address);
-
-      return cdFromGetAll.GetWho.call();
+      cd2 = ConsentDirective.at(addresses[0]);
+      assert(cd1.address == cd2.address);     
+      return cd2.GetWho.call();
     }).then(function(address) {
-      assert(address == doctor_account);     
+      assert(address == doctor_account);
+      return cd2.GetDirectiveType.call();
+    }).then(function(type) {
+      assert(type == DirectiveType.Consent);
       done();
     });
   });

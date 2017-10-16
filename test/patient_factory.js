@@ -20,7 +20,7 @@ contract('PatientFactory', function(accounts) {
       return Patient.at(address);
     }).then(function(instance) {
       patient = instance;
-      return patient.GetOwnerAddress.call();
+      return patient.GetOwner.call();
     }).then(function(address) {
       assert.equal(address, account);
       done();
@@ -45,7 +45,7 @@ contract('PatientFactory', function(accounts) {
       patientAddress2 = address;
       return Patient.at(address);
     }).then(function(patient) {
-      return patient.GetOwnerAddress.call();
+      return patient.GetOwner.call();
     }).then(function(address) {
       assert(address == account);
       assert(patientAddress1 != null_address);
@@ -65,7 +65,7 @@ contract('PatientFactory', function(accounts) {
       assert(address != null_address);
       return Patient.at(address);
     }).then(function(patient) {
-      return patient.GetOwnerAddress.call();
+      return patient.GetOwner.call();
     }).then(function(address) {
       assert.equal(address, account);
       patientFactory.DeletePatient.sendTransaction({from: account});
