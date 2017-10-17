@@ -2,6 +2,9 @@ pragma solidity ^0.4.4;
 
 contract ConsentDirective {
 
+  // These enums are for descriptive reasons only and do not
+  // represent the actual values to be used in the uint32 member
+  // variables seen below since they are used as bitfields.
   enum DirectiveType { Consent, Delegate /* Delegate authority to consent on his/her behalf */ } // Not used ATM
   enum RecordTypeValues { Any, Specific, XRay, LabReports, Prescription }
   enum AccessTypeValues { Any, View, Modify, Order, Consult, AddNote, Diagnosis }
@@ -22,6 +25,14 @@ contract ConsentDirective {
   uint32 public AccessType; // The access type
   function SetAccessType(uint32 accessType) { AccessType = accessType; }
 
+  uint32 public Why; // The why
+  function SetWhy(uint32 why) { Why = why; }
+
+  address[] public Origin; // Eastern Health, Hospital Specific, Clinic Specific... Empty array represents any
+  function AddOrigin(address origin) { Origin.push(origin); }
+
+  // TODO add expiry date
+
   function ConsentDirective(address who, bool delegateAuthority) {
     Who = who;
     DelegateAuthority = delegateAuthority;
@@ -34,15 +45,5 @@ contract ConsentDirective {
 
     return result;
   }
-
-  /*
-  RecordType private mRecordType;
-  address private mSpecificRecord; // Only for RecordType::Specific
-  address[] mOrigins; // Empty array represents Any origin
-  AccessType private mAccessType;
-  Why private mWhy;
-  // TODO expiry date
-  */
   
 }
-
