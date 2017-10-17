@@ -6,6 +6,8 @@ contract Patient {
   address private mOwner;
   ConsentDirective[] private mDirectives;
 
+  event ConsentDirectiveAdded(bool success);
+
   function Patient(address owner) {
     mOwner = owner;
   }
@@ -25,8 +27,9 @@ contract Patient {
   function AddConsentDirective(ConsentDirective cd) {
     if (msg.sender == mOwner || this.HasDelegatedAuthority(msg.sender, cd)) {
       mDirectives.push(cd);
+      ConsentDirectiveAdded(true);
     } else {
-      revert();
+      ConsentDirectiveAdded(false);
     }
   }
 
