@@ -80,6 +80,9 @@ contract('Patient', function(accounts) {
 
     var other_account = accounts[3]; // Another unrelated account
 
+    var event;
+    var count = 0;
+
     PatientFactory.deployed().then(function(instance) {
       patientFactory = instance;
       return patientFactory.GetPatient.call({from: patient_account});
@@ -87,73 +90,37 @@ contract('Patient', function(accounts) {
       patient = Patient.at(address);
       return patient.DeleteAllConsentDirectives.sendTransaction({from: patient_account});
     }).then(function() {
-      var delegate = true;
-      return ConsentDirective.new(doctor_account, delegate);
+      return ConsentDirective.new(doctor_account, true);
     }).then(function(cd) {
       doctor_cd = cd;
-      
-      var event = patient.ConsentDirectiveAdded();
-      event.watch(function(error, result){
-        if (!error) {
-          // Adding a CD from the doctor_account -- should fail (not yet a delegate)!
-          assert(result.args.success == false);
-          event.stopWatching();
-        }
-      });
-      
-      return patient.AddConsentDirective.sendTransaction(doctor_cd.address, {from: doctor_account});
     }).then(function() {
-      
-      var event = patient.ConsentDirectiveAdded();
-      event.watch(function(error, result){
-        if (!error) {
-          // Adding a CD from the patient account -- should work!
-          assert(result.args.success == true);
-          event.stopWatching();
-        }
-      });
-      
-      return patient.AddConsentDirective.sendTransaction(doctor_cd.address, {from: patient_account});
-    }).then(function() {
-      var delegate = false;
-      return ConsentDirective.new(doctor2_account, delegate);
+      return ConsentDirective.new(doctor2_account, false);
     }).then(function(cd) {
-      /*doctor2_cd = cd;
+      doctor2_cd = cd;
+    }).then(function() {
 
-      var event = patient.ConsentDirectiveAdded();
+      event = patient.ConsentDirectiveAdded();
       event.watch(function(error, result){
         if (!error) {
-          // Adding a CD from the doctor_account -- should work (now a delegate)!
-          //assert(result.args.success == true);
-          event.stopWatching();
+          //console.log(result.args);
 
-          PrintConsentDirectives(patient);
+          count++;
+          if (count == 1) {
+            patient.AddConsentDirective.sendTransaction(doctor_cd.address, {from: patient_account});
+          } else if (count == 2) {
+            patient.AddConsentDirective.sendTransaction(doctor2_cd.address, {from: doctor_account});
+          } else if (count == 3) {
+            event.stopWatching();
+            done();
+          }
         }
       });
-      
-      patient.AddConsentDirective.sendTransaction(doctor2_cd.address, {from: patient_account});*/
 
-      done();
+    }).then(function() {
+      return patient.AddConsentDirective.sendTransaction(doctor2_cd.address, {from: doctor_account});
+    }).then(function() {
+      //done();
     });
   });
 
-      //console.log('Patient:', patient_account);
-      //console.log('Doctor:', doctor_account);
-      //PrintConsentDirectives(patient);
-
-
-
 });
-
-
-function PrintConsentDirectives(patient) {
-  patient.GetConsentDirectives.call().then(function(addresses) {
-    for (var i = 0; i < addresses.length; i++) {
-      var directive = ConsentDirective.at(addresses[i]);
-      directive.Who.call().then(function(who) {
-        console.log('Who:', who);
-      }); 
-    }
-  });
-
-}
