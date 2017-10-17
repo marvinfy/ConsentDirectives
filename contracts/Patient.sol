@@ -8,7 +8,6 @@ contract Patient {
 
   function Patient(address owner) {
     mOwner = owner;
-    mDirectives = new ConsentDirective[](0);
   }
 
   function GetOwner() constant returns(address) {
@@ -26,6 +25,14 @@ contract Patient {
   function AddConsentDirective(ConsentDirective cd) {
     if (msg.sender == mOwner || this.HasDelegatedAuthority(msg.sender, cd)) {
       mDirectives.push(cd);
+    } else {
+      revert();
+    }
+  }
+
+  function DeleteAllConsentDirectives() {
+    if (msg.sender == mOwner) {
+      mDirectives = new ConsentDirective[](0);
     } else {
       revert();
     }
@@ -69,7 +76,5 @@ contract Patient {
 
     return hasAuthorityToConsent;
   }
-
-
 
 }

@@ -2,50 +2,25 @@ pragma solidity ^0.4.4;
 
 contract ConsentDirective {
 
-  /*enum DirectiveType {
-    Consent,  // Consent
-    Delegate  // Delegate authority to consent on his/her behalf
-  }*/
+  enum DirectiveType { Consent, Delegate /* Delegate authority to consent on his/her behalf */ } // Not used ATM
+  enum RecordTypeValues { Any, Specific, XRay, LabReports, Prescription }
+  enum AccessTypeValues { Any, View, Modify, Order, Consult, AddNote, Diagnosis }
+  enum WhyValues { Any, PrimaryCare, Diagnosis, Treatment, SpecificProcedures, Emergency, RecordCorrection, CaseManagement }
 
-/*
-  // TODO store as bytes to allow multiple options (bitwise operations)
-  enum RecordType {
-    Any,
-    Specific,
-    XRay,
-    LabReports,
-    Prescription
-    // ...
-  }
-
-  // TODO store as bytes to allow multiple options (bitwise operations)
-  enum AccessType {
-    Any,
-    ViewRecord,
-    ModifyRecord,
-    Order,
-    Consult,
-    AddNote,
-    Diagnosis // Why?
-  }
-
-  // TODO store as bytes to allow multiple options (bitwise operations)
-  enum Why {
-    Any,
-    PrimaryCare,
-    Diagnosis,
-    Treatment,
-    SpecificProcedures,
-    Emergency,
-    RecordCorrection,
-    CaseManagement
-  }*/
-
-  address public Who; // Who the patient is giving consent
+  address public Who; // To whom the patient is giving consent
   function SetWho(address who) { Who = who; }
 
-  bool public DelegateAuthority; // Whether this delegates authority to consent on the Patient's behalf
+  bool public DelegateAuthority; // Authority to consent on the Patient's behalf (displaces DirectiveType)
   function SetDelegateAuthority(bool value) { DelegateAuthority = value; }
+
+  uint32 public RecordType; // The record type
+  function SetRecordType(uint32 recordType) { RecordType = recordType; }
+
+  address public Record; // The record when RecordType is Specific. Null otherwise.
+  function SetRecord(address record) { Record = record; }
+
+  uint32 public AccessType; // The access type
+  function SetAccessType(uint32 accessType) { AccessType = accessType; }
 
   function ConsentDirective(address who, bool delegateAuthority) {
     Who = who;
@@ -54,8 +29,8 @@ contract ConsentDirective {
 
   function Encompasses(ConsentDirective other) returns(bool) {
     bool result = true;
-    result = result && (Who == other.Who());
-
+    result = result && (this.Who() == other.Who());
+    result = result && (this.DelegateAuthority() == other.DelegateAuthority());
 
     return result;
   }

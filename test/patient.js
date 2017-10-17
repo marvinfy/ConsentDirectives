@@ -34,7 +34,7 @@ contract('Patient', function(accounts) {
     });
   });
 
-  it("should allow Patient to add an instance of ConsentDirective", function(done) {
+  it("should allow owner to add an instance of ConsentDirective", function(done) {
     var patientFactory;
     var patient;
     var cd1, cd2;
@@ -65,4 +65,42 @@ contract('Patient', function(accounts) {
       done();
     });
   });
+
+  it("should only allow owner and delegate to add an instance of ConsentDirective", function(done) {
+    var patientFactory;
+    var patient;
+    var patient_account = accounts[0];
+    var delegate_account = accounts[1];
+    var other_account = accounts[2];
+
+    PatientFactory.deployed().then(function(instance) {
+      patientFactory = instance;
+      return patientFactory.GetPatient.call({from: patient_account});
+    }).then(function(address) {
+      patient = Patient.at(address);
+      return patient.DeleteAllConsentDirectives.sendTransaction({from: patient_account});
+    }).then(function() {
+      done();
+    });
+  });
+
+      //console.log('Patient:', patient_account);
+      //console.log('Doctor:', doctor_account);
+      //PrintConsentDirectives(patient);
+
+
+
 });
+
+
+function PrintConsentDirectives(patient) {
+  patient.GetConsentDirectives.call().then(function(addresses) {
+    for (var i = 0; i < addresses.length; i++) {
+      var directive = ConsentDirective.at(addresses[i]);
+      directive.Who.call().then(function(who) {
+        console.log('Who:', who);
+      }); 
+    }
+  });
+
+}
