@@ -1,14 +1,18 @@
 pragma solidity ^0.4.4;
 
 contract ConsentDirective {
+
   address public Who; // To whom the patient is giving consent
   function SetWho(address value) { Who = value; }
 
   bool public DelegateAuthority; // Authority to consent on the Patient's behalf
   function SetDelegateAuthority(bool value) { DelegateAuthority = value; }
 
+  // TODO refactor ConsentData to its own type
   uint256 public ConsentData; // The semantics of ConsentData is defined externally in conjunction with CategoryCollection
   function SetConsentData(uint256 value) { ConsentData = value; }
+
+  // TODO add expiry date
 
   function ConsentDirective(address who, bool delegateAuthority, uint256 consentData) {
     Who = who;

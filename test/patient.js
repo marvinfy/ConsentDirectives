@@ -1,6 +1,7 @@
 var PatientFactory = artifacts.require("./PatientFactory.sol");
 var Patient = artifacts.require("./Patient.sol");
 var ConsentDirective = artifacts.require("./ConsentDirective.sol");
+var CategoryCollection = artifacts.require("./CategoryCollection.sol");
 
 contract('Patient', function(accounts) {
 

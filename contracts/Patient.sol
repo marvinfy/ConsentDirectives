@@ -1,8 +1,10 @@
 pragma solidity ^0.4.4;
 
+import "./Category.sol";
 import "./ConsentDirective.sol";
 
 contract Patient {
+  
   address private mOwner;
   ConsentDirective[] private mDirectives;
 
