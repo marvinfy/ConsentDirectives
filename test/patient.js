@@ -41,7 +41,7 @@ contract('Patient', function(accounts) {
       return patientFactory.GetPatient.call({from: patient_account});
     }).then(function(address) {
       patient = Patient.at(address);
-      return ConsentDirective.new(doctor_account, true);
+      return ConsentDirective.new(doctor_account, true, 0);
     }).then(function(instance) {
       cd1 = instance;
       return patient.AddConsentDirective.sendTransaction(cd1.address, {from: patient_account});
@@ -85,19 +85,19 @@ contract('Patient', function(accounts) {
 
     // Create CD for doctor_account with (true) delegation power
     }).then(function() {
-      return ConsentDirective.new(doctor_account, true);
+      return ConsentDirective.new(doctor_account, true, 0);
     }).then(function(cd) {
       doctor_cd = cd;
 
     // Create CD for doctor2_account without (false) delegation power
     }).then(function() {
-      return ConsentDirective.new(doctor2_account, false);
+      return ConsentDirective.new(doctor2_account, false, 0);
     }).then(function(cd) {
       doctor2_cd = cd;
 
     // Create CD for another_acount without (false) delegation power
     }).then(function() {
-      return ConsentDirective.new(another_account, false);
+      return ConsentDirective.new(another_account, false, 0);
     }).then(function(cd) {
       another_cd = cd;
 

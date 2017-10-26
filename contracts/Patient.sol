@@ -38,18 +38,18 @@ contract Patient {
     }
   }
 
-  // Cheks all consent directives and returns true if the patient has a
-  // directive that encompasses the one provided as a parameter.
-  //
   function ConsentsTo(ConsentDirective cd) constant returns(bool) {
-    
+
     if (msg.sender == mOwner) {
       return true;
     }
 
+    // Cheks all consent directives and returns true if the patient has a
+    // directive that encompasses the one provided as a parameter.
     for (uint i = 0; i < mDirectives.length; i++) {
-      if (mDirectives[i].Encompasses(cd)) {
-        return true;
+      if (cd.Who() == mDirectives[i].Who() && cd.DelegateAuthority() == mDirectives[i].DelegateAuthority()) {
+          // TODO: Check ConsentData+CategoryCollection
+          return true;
       }
     }
 
