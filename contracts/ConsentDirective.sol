@@ -31,4 +31,8 @@ contract ConsentDirective {
     What = what;
     Record = address(0);
   }
+
+  function HasDelegateAuthority() constant returns(bool) {
+    return (What & 0x1 == 0x1);
+  }
 }

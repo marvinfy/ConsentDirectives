@@ -115,7 +115,7 @@ contract('Patient', function(accounts) {
       return patientFactory.GetPatient.call({from: patient_account});
     }).then(function(address) {
       patient = Patient.at(address);
-      return ConsentDirective.new(doctor_account, 1);
+      return ConsentDirective.new(doctor_account, 0x1);
     }).then(function(instance) {
       cd1 = instance;
       return patient.AddConsentDirective.sendTransaction(cd1.address, {from: patient_account});
@@ -123,14 +123,14 @@ contract('Patient', function(accounts) {
       return patient.GetConsentDirectives.call();
     }).then(function(addresses) {
       assert(addresses.length == 1);
-      //cd2 = ConsentDirective.at(addresses[0]);
-      //assert(cd1.address == cd2.address);
-      //return cd2.Who.call();
+      cd2 = ConsentDirective.at(addresses[0]);
+      assert(cd1.address == cd2.address);
+      return cd2.Who.call();
     }).then(function(address) {
-      //assert(address == doctor_account);
-      //return cd2.DelegateAuthority.call();
-    }).then(function(delegateAuthority) {
-      //assert(delegateAuthority == true);
+      assert(address == doctor_account);
+      return cd2.HasDelegateAuthority.call();
+    }).then(function(hasDelegateAuthority) {
+      assert(hasDelegateAuthority);
       done();
     });
   });
