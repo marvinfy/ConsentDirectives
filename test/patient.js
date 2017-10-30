@@ -20,7 +20,6 @@ contract('Patient', function(accounts) {
     var modify = 4294901792;
     var add_note = 4294901824;
 
-
     CategoryCatalog.deployed().then(function(instance) {
       catalog = instance;
 
