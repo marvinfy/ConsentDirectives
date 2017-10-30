@@ -1,20 +1,8 @@
 pragma solidity ^0.4.4;
 
-contract Category {
-
-  string public Name;
-  function SetName(string name) { Name = name; }
-
-  // TODO use future ConsentData type when that's done
-  uint256[] public ConsentData;
-  function AddConsentData(uint256 consentData) { ConsentData.push(consentData); }
-
-}
+import "./Category.sol";
 
 contract CategoryCatalog {
-
-  address Owner;
-  Category[] public Categories;
   
   modifier OwnerOnly {
     if (msg.sender == Owner) {
@@ -24,7 +12,10 @@ contract CategoryCatalog {
     }
   }
 
-  function Categories() {
+  address Owner;
+  Category[] Categories;
+
+  function CategoryCatalog() {
     Owner = msg.sender;
     Categories = new Category[](0);
   }
@@ -39,6 +30,14 @@ contract CategoryCatalog {
 
   function Update(uint i, Category category) OwnerOnly {
     Categories[i] = category;
+  }
+
+  function GetCount() constant returns(uint) {
+    return Categories.length;
+  }
+
+  function GetAll() constant returns(Category[]) {
+    return Categories;
   }
 
 }

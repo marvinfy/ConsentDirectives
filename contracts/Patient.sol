@@ -5,78 +5,95 @@ import "./ConsentDirective.sol";
 
 contract Patient {
   
-  address private mOwner;
-  ConsentDirective[] private mDirectives;
+  address public Owner;
 
-  event ConsentDirectiveAdded(ConsentDirective, bool);
+  ConsentDirective[] public Directives;
 
   function Patient(address owner) {
-    mOwner = owner;
+    Owner = owner;
   }
 
   function GetOwner() constant returns(address) {
-    return mOwner;
+    return Owner;
   }
 
   function GetConsentDirectives() constant returns(ConsentDirective[]) {
-    return mDirectives;
+    return Directives;
   }
 
-  // In order to add a consent directive, the caller must be
-  // the patient or have authority to consent on behalf of the
-  // patient.
-  //
   function AddConsentDirective(ConsentDirective cd) {
-    if (msg.sender == mOwner || this.HasDelegatedAuthority(msg.sender, cd)) {
-      mDirectives.push(cd);
+    if (this.HasDelegatedAuthority(msg.sender, cd)) {
+      Directives.push(cd);
     }
   }
 
-  function DeleteAllConsentDirectives() {
-    if (msg.sender == mOwner) {
-      mDirectives = new ConsentDirective[](0);
+  function RemoveAllConsentDirectives() {
+    if (msg.sender == Owner) {
+      Directives = new ConsentDirective[](0);
     } else {
       revert();
     }
   }
 
-  function ConsentsTo(ConsentDirective cd) constant returns(bool) {
+  //
+  // Does Patient consent WHO to do WHAT?
+  //
+  function ConsentsTo(address who, Category what) constant returns(bool) {
 
-    if (msg.sender == mOwner) {
+    // Owner always consents to themself
+    if (who == Owner) {
       return true;
     }
 
-    // Cheks all consent directives and returns true if the patient has a
-    // directive that encompasses the one provided as a parameter.
-    for (uint i = 0; i < mDirectives.length; i++) {
-      if (cd.Who() == mDirectives[i].Who() && cd.DelegateAuthority() == mDirectives[i].DelegateAuthority()) {
-          // TODO: Check ConsentData+CategoryCollection
-          return true;
+    for (uint i = 0; i < Directives.length; i++) {
+
+      if (who != Directives[i].Who()) {
+        continue;
       }
+
+      for (uint j = 0; j < what.GetConsentDataCount(); j++) {
+        var req_data = what.GetConsentData(j); // Requested data (category)
+        var con_data = Directives[j].What();   // Consented data
+
+        // req_data 0001 0000 
+        // con_data 0001 0110 &
+        // res_data 0001 0000 (result)
+        if (req_data & con_data == req_data) {
+          return true;
+        }
+
+      }
+
     }
 
     return false;
   }
 
-  function HasDelegatedAuthority(address delegate, ConsentDirective cd) returns(bool) {
-    // Because having consent to do something is different from having
-    // authority to consent the same thing, we have to query Encompasses
-    // with a modified version of the consent directive.
+  // Has Patient delegated authority to WHO to consent to WHAT on their behalf?
+  function HasDelegatedAuthority(address who, ConsentDirective what) constant returns(bool) {
 
-    // Save original state
-    address original_who = cd.Who();
-    bool original_auth = cd.DelegateAuthority();
+    // Owner always has authority to consent
+    if (who == Owner) {
+      return true;
+    }
 
-    // Modify state and query
-    cd.SetWho(delegate);
-    cd.SetDelegateAuthority(true);
-    bool hasAuthorityToConsent = ConsentsTo(cd);
+    // The least significant bit indicates authority to consent on the Patient's behalf,
+    // therefore we change the LSB to 1 to check for authority to consent.
+    var req_data = what.What() | 0x1;
 
-    // Restore original state
-    cd.SetWho(original_who);
-    cd.SetDelegateAuthority(original_auth);
+    for (uint i = 0; i < Directives.length; i++) {
+      var con_data = Directives[i].What(); // Consented data
 
-    return hasAuthorityToConsent;
+      // req_data 0001 0001 
+      // con_data 0111 0001 &
+      // res_data 0001 0001 (result)
+      if (req_data & con_data == req_data) {
+        return true;
+      }
+
+    }
+
+    return false;
   }
 
 }

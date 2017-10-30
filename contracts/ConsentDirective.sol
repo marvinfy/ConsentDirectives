@@ -2,21 +2,33 @@ pragma solidity ^0.4.4;
 
 contract ConsentDirective {
 
-  address public Who; // To whom the patient is giving consent
-  function SetWho(address value) { Who = value; }
+  // To whom the Patient is giving consent
+  address public Who; 
+  function SetWho(address who) { Who = who; }
 
-  bool public DelegateAuthority; // Authority to consent on the Patient's behalf
-  function SetDelegateAuthority(bool value) { DelegateAuthority = value; }
+  // The semantics of the What are specified by the system administrator
+  // All bits except the four least significant bits are of general purpose
+  //
+  // Four LSBs:
+  // Bit 0: authority to consent on the patient's behalf
+  // Bit 1: specific record -- this instance represents the consent directives of a specific medical record
+  // Bit 2: reserved
+  // Bit 3: reserved
+  //
+  // TODO refactor uint256 (consent data) to its own type (ConsentData contract)
+  uint256 public What;
+  function SetWhat(uint256 what) { What = what; }
 
-  // TODO refactor ConsentData to its own type
-  uint256 public ConsentData; // The semantics of ConsentData is defined externally in conjunction with CategoryCollection
-  function SetConsentData(uint256 value) { ConsentData = value; }
+  // Specific record that this instance represents
+  // Null when non-specific
+  address public Record;
+  function SetRecord(address record) { Record = record; }
 
   // TODO add expiry date
 
-  function ConsentDirective(address who, bool delegateAuthority, uint256 consentData) {
+  function ConsentDirective(address who, uint256 what) {
     Who = who;
-    DelegateAuthority = delegateAuthority;
-    ConsentData = consentData;
+    What = what;
+    Record = address(0);
   }
 }
