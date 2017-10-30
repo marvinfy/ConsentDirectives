@@ -60,6 +60,9 @@ contract('Patient', function(accounts) {
       return Category.at(categories[0]);
     }).then(function(instance) {
       category = instance;
+      return category.Name.call();
+    }).then(function(name) {
+      assert(name == "View Records");
       return category.GetConsentDataCount.call();
     }).then(function(count) {
       assert.isTrue(count == 3);
