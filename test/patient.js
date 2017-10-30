@@ -20,11 +20,12 @@ contract('Patient', function(accounts) {
     var modify = 4294901792;
     var add_note = 4294901824;
 
+
     CategoryCatalog.deployed().then(function(instance) {
       catalog = instance;
 
-      // Create a View Records category and add some consent data to it
     }).then(function() {
+      // Create a View Records category and add some consent data to it
       return Category.new("View Records", {from: accounts[0]});
     }).then(function(instance) {
       catViewRecords = instance;      
@@ -37,8 +38,8 @@ contract('Patient', function(accounts) {
     }).then(function() {
       return catalog.Add.sendTransaction(catViewRecords.address, {from: accounts[0]});
 
-      // Create an Edit Records category and add some consent data to it
     }).then(function() {
+      // Create an Edit Records category and add some consent data to it
       return Category.new("Edit Records", {from: accounts[0]});
     }).then(function(instance) {
       catEditRecords = instance;
@@ -49,14 +50,15 @@ contract('Patient', function(accounts) {
     }).then(function() {
       return catalog.Add.sendTransaction(catEditRecords.address, {from: accounts[0]});
 
-    // Retrive categories and check permissions      
     }).then(function() {
+      // Retrive all (2) categories
       return catalog.GetAll.call();
     }).then(function(instances) {
       categories = instances;
       assert.isTrue(categories.length == 2);
 
     }).then(function() {
+      // Check View Records category
       return Category.at(categories[0]);
     }).then(function(instance) {
       category = instance;
@@ -77,7 +79,6 @@ contract('Patient', function(accounts) {
         });
       });
     });
-
   });
 
   it("should have no consent directives after instantiation", function(done) {
@@ -134,6 +135,7 @@ contract('Patient', function(accounts) {
       done();
     });
   });
+});
 
   /*
   it("should only allow owner and delegate to add an instance of ConsentDirective", function(done) {
@@ -219,8 +221,6 @@ contract('Patient', function(accounts) {
   });
   */
   
-});
-
 
 
 /*
