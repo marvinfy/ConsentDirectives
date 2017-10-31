@@ -17,6 +17,14 @@ contract Patient {
     return Owner;
   }
 
+  function GetConsentDirectiveCount() constant returns(uint) {
+    return Directives.length;
+  }
+
+  function GetConsentDirective(uint i) constant returns(ConsentDirective) {
+    return Directives[i];
+  } 
+
   function GetConsentDirectives() constant returns(ConsentDirective[]) {
     return Directives;
   }
@@ -38,8 +46,7 @@ contract Patient {
   //
   // Does Patient consent WHO to do WHAT?
   //
-  function ConsentsTo(address who, Category what) constant returns(bool) {
-
+  function ConsentsTo(address who, Category category) constant returns(bool) {
     // Owner always consents to themself
     if (who == Owner) {
       return true;
@@ -51,17 +58,15 @@ contract Patient {
         continue;
       }
 
-      for (uint j = 0; j < what.GetConsentDataCount(); j++) {
-        var req_data = what.GetConsentData(j); // Requested data (category)
-        var con_data = Directives[j].What();   // Consented data
+      var dir_data = Directives[i].What();   // Directive data (consented)
 
-        // req_data 0001 0000 
-        // con_data 0001 0110 &
-        // res_data 0001 0000 (result)
-        if (req_data & con_data == req_data) {
+      for (uint j = 0; j < category.GetConsentDataCount(); j++) {
+        var cat_data = category.GetConsentData(j); // Requested data (category)
+
+        var res_data = dir_data & cat_data; 
+        if (res_data == dir_data) {
           return true;
         }
-
       }
 
     }

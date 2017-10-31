@@ -16,9 +16,9 @@ contract('Patient', function(accounts) {
     var categories;
     var category;
 
-    var view = 4294901776;
-    var modify = 4294901792;
-    var add_note = 4294901824;
+    var view     = 0xFFFF0010;
+    var modify   = 0xFFFF0020;
+    var add_note = 0xFFFF0040;
 
     CategoryCatalog.deployed().then(function(instance) {
       catalog = instance;
@@ -134,7 +134,81 @@ contract('Patient', function(accounts) {
       done();
     });
   });
+
+  it("should respect the existing categories", function(done) {
+    var catalog;
+    var cats;
+    var catView;
+    var catEdit;
+
+    var patientFactory;
+    var patient; // accounts[0]
+    var cd_doc1; // accounts[1]
+    var cd_doc2; // accounts[2] -- 0xFFF1 (delegate + all permissions)
+    var cd_doc3; // accounts[3] -- 0x0040 (add note)
+  
+    CategoryCatalog.deployed().then(function(instance) {
+      catalog = instance;
+      return catalog.GetAll.call();
+    }).then(function(instances) {
+      cats = instances;
+      assert.isTrue(cats.length == 2);
+    }).then(function() {
+      return Category.at(cats[0]);
+    }).then(function(instance) {
+      catView = instance;
+    }).then(function() {
+      return Category.at(cats[1]);
+    }).then(function(instance) {
+      catEdit = instance;
+    });
+
+    PatientFactory.deployed().then(function(instance) {
+      patientFactory = instance;
+      return patientFactory.GetPatient.call({from: accounts[0]});
+    }).then(function(address) {
+      return Patient.at(address);
+    }).then(function(instance) {
+      patient = instance;
+      return patient.RemoveAllConsentDirectives.sendTransaction();
+    }).then(function() {
+      return patient.GetConsentDirectives.call();
+    }).then(function(addresses) {
+      assert(addresses.length == 0);
+
+      // Doc1 -- 0x0010 16d (view)
+      return ConsentDirective.new(accounts[1], 0x10);
+    }).then(function(instance) {
+      cd_doc1 = instance;
+      return cd_doc1.HasDelegateAuthority.call();
+    }).then(function(delegateAuthority) {
+      assert.isFalse(delegateAuthority);
+      return patient.AddConsentDirective.sendTransaction(cd_doc1.address, {from: accounts[0]});
+    }).then(function() {
+      return patient.ConsentsTo.call(accounts[1], catView.address);
+    }).then(function(consents) {
+      assert.isTrue(consents);
+    }).then(function() {
+      return patient.ConsentsTo.call(accounts[1], catEdit.address);
+    }).then(function(consents) {
+      assert.isFalse(consents);
+
+
+      done();
+    });
+  });
+  
 });
+
+var ToBinary = function(num){
+  return parseInt(num, 10).toString(2);
+}
+
+
+
+
+
+
 
   /*
   it("should only allow owner and delegate to add an instance of ConsentDirective", function(done) {
