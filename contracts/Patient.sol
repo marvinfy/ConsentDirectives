@@ -46,7 +46,7 @@ contract Patient {
   //
   // Does Patient consent WHO to do WHAT?
   //
-  function ConsentsTo(address who, Category category) constant returns(bool) {
+  function ConsentsTo(address who, Category what) constant returns(bool) {
     // Owner always consents to themself
     if (who == Owner) {
       return true;
@@ -60,8 +60,8 @@ contract Patient {
 
       var dir_data = Directives[i].What();   // Directive data (consented)
 
-      for (uint j = 0; j < category.GetConsentDataCount(); j++) {
-        var cat_data = category.GetConsentData(j); // Requested data (category)
+      for (uint j = 0; j < what.GetConsentDataCount(); j++) {
+        var cat_data = what.GetConsentData(j); // Requested data (category)
 
         var res_data = dir_data & cat_data; 
         if (res_data == cat_data) {

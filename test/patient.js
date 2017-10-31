@@ -4,6 +4,10 @@ var ConsentDirective = artifacts.require("./ConsentDirective.sol");
 var Patient = artifacts.require("./Patient.sol");
 var PatientFactory = artifacts.require("./PatientFactory.sol");
 
+var ToBinary = function(num){
+  return parseInt(num, 10).toString(2);
+}
+
 contract('Patient', function(accounts) {
 
   assert(accounts.length >= 4, "Not enough accounts available for testing");
@@ -16,9 +20,9 @@ contract('Patient', function(accounts) {
     var categories;
     var category;
 
-    var view     = 0x10;
-    var modify   = 0x20;
-    var add_note = 0x40;
+    var view     = 0xFFFF0010;
+    var modify   = 0xFFFF0020;
+    var add_note = 0xFFFF0040;
 
     CategoryCatalog.deployed().then(function(instance) {
       catalog = instance;
@@ -176,8 +180,8 @@ contract('Patient', function(accounts) {
     }).then(function(addresses) {
       assert(addresses.length == 0);
 
-      // Doc1 -- 0x0010 (view)
-      return ConsentDirective.new(accounts[1], 0x10);
+      // Doc1 -- 0xFFFF00010 (view)
+      return ConsentDirective.new(accounts[1], 0xFFFF0010);
     }).then(function(instance) {
       cd_doc1 = instance;
       return cd_doc1.HasDelegateAuthority.call();
@@ -201,8 +205,8 @@ contract('Patient', function(accounts) {
     }).then(function(count) {
       assert(count == 1);
 
-      // Doc2 -- 0x71 (delegate + all permissions)
-      return ConsentDirective.new(accounts[2], 0x71);
+      // Doc2 -- 0xFFFF0071 (delegate + all permissions)
+      return ConsentDirective.new(accounts[2], 0xFFFF0071);
     }).then(function(instance) {
       cd_doc2 = instance;
       return cd_doc2.HasDelegateAuthority.call();
@@ -221,8 +225,8 @@ contract('Patient', function(accounts) {
     }).then(function(count) {
       assert(count == 2);
 
-      // Doc3 -- 0x0040 (add note)
-      return ConsentDirective.new(accounts[3], 0x40);
+      // Doc3 -- 0xFFFF0040 (add note)
+      return ConsentDirective.new(accounts[3], 0xFFFF0040);
     }).then(function(instance) {
       cd_doc3 = instance;
       return cd_doc3.HasDelegateAuthority.call();
@@ -242,107 +246,12 @@ contract('Patient', function(accounts) {
       return patient.ConsentsTo.call(accounts[3], catEdit.address);
     }).then(function(consents) {
       assert.isTrue(consents);
-      
+
       done();
     });
   });
   
 });
-
-var ToBinary = function(num){
-  return parseInt(num, 10).toString(2);
-}
-
-
-
-
-
-
-
-  /*
-  it("should only allow owner and delegate to add an instance of ConsentDirective", function(done) {
-    var patientFactory;
-    var patient;
-
-    var patient_account = accounts[0]; // The patient
-
-    var doctor_account = accounts[1]; // Patient's family doctor (and delegate)
-    var doctor_cd;
-
-    var doctor2_account = accounts[2]; // Another doctor (not delegate)
-    var doctor2_cd;
-
-    var another_account = accounts[3]; // Another unrelated account
-    var another_cd;
-
-    PatientFactory.deployed().then(function(instance) {
-      patientFactory = instance;
-      return patientFactory.GetPatient.call({from: patient_account});
-    }).then(function(address) {
-      patient = Patient.at(address);
-      patient.RemoveAllConsentDirectives.sendTransaction({from: patient_account});
-
-    // Create CD for doctor_account with (true) delegation power
-    }).then(function() {
-      return ConsentDirective.new(doctor_account, true, 0);
-    }).then(function(cd) {
-      doctor_cd = cd;
-
-    // Create CD for doctor2_account without (false) delegation power
-    }).then(function() {
-      return ConsentDirective.new(doctor2_account, false, 0);
-    }).then(function(cd) {
-      doctor2_cd = cd;
-
-    // Create CD for another_acount without (false) delegation power
-    }).then(function() {
-      return ConsentDirective.new(another_account, false, 0);
-    }).then(function(cd) {
-      another_cd = cd;
-
-    // 1)
-    // Trying and adding doctor2_cd from doctor_account: should fail
-    }).then(function() {
-      patient.AddConsentDirective.sendTransaction(doctor2_cd.address, {from: doctor_account});
-    }).then(function() {
-      return patient.ConsentsTo.call(doctor2_cd.address, {from: another_account});
-    }).then(function(result) {
-      assert.isFalse(result);
-
-    // 2)
-    // Add CD for doctor_account from patient_account: should succeed
-    }).then(function() {
-      patient.AddConsentDirective.sendTransaction(doctor_cd.address, {from: patient_account});
-    }).then(function() {
-      return patient.ConsentsTo.call(doctor_cd.address, {from: another_account});
-    }).then(function(result) {
-      assert.isTrue(result);
-
-    // 3)
-    // Retry 1: should succeed
-    }).then(function() {
-      patient.AddConsentDirective.sendTransaction(doctor2_cd.address, {from: doctor_account});
-    }).then(function() {
-      return patient.ConsentsTo.call(doctor2_cd.address, {from: another_account});
-    }).then(function(result) {
-      assert.isTrue(result);
-
-    // 4)
-    // Trying and adding another_cd from doctor2_account: should fail since doctor2_account has no delegation power
-    }).then(function() {
-      patient.AddConsentDirective.sendTransaction(another_cd.address, {from: doctor2_account});
-    }).then(function() {
-      return patient.ConsentsTo.call(another_cd.address, {from: another_account});
-    }).then(function(result) {
-      assert.isFalse(result);
-
-    }).then(function(result) {
-      done();
-    });
-
-  });
-  */
-  
 
 
 /*
@@ -368,6 +277,5 @@ event.watch(function(error, result){
     done();
   }
 
-});*/
-
-//patient.AddConsentDirective.sendTransaction(doctor2_cd.address, {from: doctor_account});
+});
+*/
