@@ -176,7 +176,7 @@ contract('Patient', function(accounts) {
     }).then(function(addresses) {
       assert(addresses.length == 0);
 
-      // Doc1 -- 0x0010 16d (view)
+      // Doc1 -- 0x0010 (view)
       return ConsentDirective.new(accounts[1], 0x10);
     }).then(function(instance) {
       cd_doc1 = instance;
@@ -201,8 +201,7 @@ contract('Patient', function(accounts) {
     }).then(function(count) {
       assert(count == 1);
 
-
-      // Doc2 -- 0xFFF1 (delegate + all permissions)
+      // Doc2 -- 0x71 (delegate + all permissions)
       return ConsentDirective.new(accounts[2], 0x71);
     }).then(function(instance) {
       cd_doc2 = instance;
@@ -221,16 +220,29 @@ contract('Patient', function(accounts) {
       return patient.GetConsentDirectiveCount.call();
     }).then(function(count) {
       assert(count == 2);
-      return patient.AddConsentDirective.sendTransaction(cd_doc2.address, {from: accounts[2]});
+
+      // Doc3 -- 0x0040 (add note)
+      return ConsentDirective.new(accounts[3], 0x40);
+    }).then(function(instance) {
+      cd_doc3 = instance;
+      return cd_doc3.HasDelegateAuthority.call();
+    }).then(function(delegateAuthority) {
+      assert.isFalse(delegateAuthority);
+      
+      // Add from Doc2 since they have delegation powers
+      return patient.AddConsentDirective.sendTransaction(cd_doc3.address, {from: accounts[2]});
     }).then(function() {
       return patient.GetConsentDirectiveCount.call();
     }).then(function(count) {
       assert(count == 3);
-
-      // Doc3 -- 0x0040 (add note)
-
-
-
+      return patient.ConsentsTo.call(accounts[3], catView.address);
+    }).then(function(consents) {
+      assert.isTrue(consents);
+    }).then(function() {
+      return patient.ConsentsTo.call(accounts[3], catEdit.address);
+    }).then(function(consents) {
+      assert.isTrue(consents);
+      
       done();
     });
   });
