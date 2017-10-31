@@ -64,7 +64,7 @@ contract Patient {
         var cat_data = category.GetConsentData(j); // Requested data (category)
 
         var res_data = dir_data & cat_data; 
-        if (res_data == dir_data) {
+        if (res_data == cat_data) {
           return true;
         }
       }

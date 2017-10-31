@@ -16,9 +16,9 @@ contract('Patient', function(accounts) {
     var categories;
     var category;
 
-    var view     = 0xFFFF0010;
-    var modify   = 0xFFFF0020;
-    var add_note = 0xFFFF0040;
+    var view     = 0x10;
+    var modify   = 0x20;
+    var add_note = 0x40;
 
     CategoryCatalog.deployed().then(function(instance) {
       catalog = instance;
@@ -144,8 +144,8 @@ contract('Patient', function(accounts) {
     var patientFactory;
     var patient; // accounts[0]
     var cd_doc1; // accounts[1]
-    var cd_doc2; // accounts[2] -- 0xFFF1 (delegate + all permissions)
-    var cd_doc3; // accounts[3] -- 0x0040 (add note)
+    var cd_doc2; // accounts[2]
+    var cd_doc3; // accounts[3]
   
     CategoryCatalog.deployed().then(function(instance) {
       catalog = instance;
@@ -192,6 +192,43 @@ contract('Patient', function(accounts) {
       return patient.ConsentsTo.call(accounts[1], catEdit.address);
     }).then(function(consents) {
       assert.isFalse(consents);
+      return patient.GetConsentDirectiveCount.call();
+    }).then(function(count) {
+      assert(count == 1);
+      return patient.AddConsentDirective.sendTransaction(cd_doc1.address, {from: accounts[1]});
+    }).then(function() {
+      return patient.GetConsentDirectiveCount.call();
+    }).then(function(count) {
+      assert(count == 1);
+
+
+      // Doc2 -- 0xFFF1 (delegate + all permissions)
+      return ConsentDirective.new(accounts[2], 0x71);
+    }).then(function(instance) {
+      cd_doc2 = instance;
+      return cd_doc2.HasDelegateAuthority.call();
+    }).then(function(delegateAuthority) {
+      assert.isTrue(delegateAuthority);
+      return patient.AddConsentDirective.sendTransaction(cd_doc2.address, {from: accounts[0]});
+    }).then(function() {
+      return patient.ConsentsTo.call(accounts[2], catView.address);
+    }).then(function(consents) {
+      assert.isTrue(consents);
+    }).then(function() {
+      return patient.ConsentsTo.call(accounts[2], catEdit.address);
+    }).then(function(consents) {
+      assert.isTrue(consents);
+      return patient.GetConsentDirectiveCount.call();
+    }).then(function(count) {
+      assert(count == 2);
+      return patient.AddConsentDirective.sendTransaction(cd_doc2.address, {from: accounts[2]});
+    }).then(function() {
+      return patient.GetConsentDirectiveCount.call();
+    }).then(function(count) {
+      assert(count == 3);
+
+      // Doc3 -- 0x0040 (add note)
+
 
 
       done();
