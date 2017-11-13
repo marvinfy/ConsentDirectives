@@ -9,11 +9,10 @@ if [[ $? -eq 0 ]]; then
     rm -rf ./webapp/app/contracts/
   fi
 
-  cp -r ./build/contracts/ ./webapp/app/contracts/
-
   truffle migrate
 
   if [[ $? -eq 0 ]]; then
+    cp -r ./build/contracts/ ./webapp/app/contracts/
     truffle test
   fi
   
