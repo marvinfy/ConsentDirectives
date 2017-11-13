@@ -44,16 +44,9 @@ function Init() {
         ]
     };
 
-    if (web3.eth.accounts.length != 1) {
-        alert('Accounts object is invalid');
-    } else {
-        for (var i = 0; i < Accounts.accounts.length; i++) {
-            if (Accounts.accounts[i].address == web3.eth.accounts[0]) {
-                $("#accountName").text(Accounts.accounts[i].name);
-            }
-        }
-        $("#accountAddress").text(web3.eth.accounts[0]);
-    }
+    $(document).attr("title", GetAccountName() + " Actor");
+    $("#accountName").text(GetAccountName());
+    $("#accountAddress").text(GetAccountAddress());
 }
 
 window.addEventListener('load', function() {
@@ -61,7 +54,7 @@ window.addEventListener('load', function() {
 });
 
 /*
- * Contract util functions
+ * Util functions
  */
 function LoadContractMetadata(path) {
     var contract;
@@ -79,6 +72,25 @@ function LoadContractMetadata(path) {
 
 function GetContractAddress(contract) {
     return contract.networks[Object.keys(contract.networks)[0]].address;
+}
+
+function GetAccountName() {
+    if (web3.eth.accounts.length != 1) {
+        return "unknown";
+    }
+
+    for (var i = 0; i < Accounts.accounts.length; i++) {
+        if (Accounts.accounts[i].address == web3.eth.accounts[0]) {
+            return Accounts.accounts[i].name;
+        }
+    }
+}
+
+function GetAccountAddress() {
+    if (web3.eth.accounts.length != 1) {
+        return "unknown";
+    }
+    return web3.eth.accounts[0];
 }
 
 /*
