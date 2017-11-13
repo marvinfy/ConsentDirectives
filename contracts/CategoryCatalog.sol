@@ -12,7 +12,7 @@ contract CategoryCatalog {
     }
   }
 
-  address Owner;
+  address public Owner;
   Category[] Categories;
 
   function CategoryCatalog() {

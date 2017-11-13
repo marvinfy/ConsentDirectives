@@ -1,4 +1,68 @@
+/*
+ * Main entry point (init)
+ */ 
+function Init() {
+    // web3 object
+    if (typeof web3 !== 'undefined')
+    {
+        window.web3 = new Web3(web3.currentProvider);
+    } 
+    else 
+    {
+        window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    }
+    
+    // Patient contract
+    var patientFactoryMetadata = LoadContractMetadata('/contracts/PatientFactory.json');
+    var patientFactoryContract = web3.eth.contract(patientFactoryMetadata.abi);
+    var patientFactoryAddress = GetContractAddress(patientFactoryMetadata);
+    patientFactoryContract.at(patientFactoryAddress, function(error, instance) {
+        if (error) {
+            alert('Unable to load PatientFactory@' + patientFactoryAddress);
+        } else {
+            window.PatientFactory = instance;
+        }
+    });
 
+    // CategoryCatalog contract
+    var categoryCatalogMetadata = LoadContractMetadata('/contracts/CategoryCatalog.json');
+    var categoryCatalogContract = web3.eth.contract(categoryCatalogMetadata.abi);
+    var categoryCatalogAddress = GetContractAddress(categoryCatalogMetadata);
+
+    categoryCatalogContract.at(categoryCatalogAddress, function(error, instance) {
+        if (error) {
+            alert('Unable to load CategoryCatalog@' + categoryCatalogAddress);
+        } else {
+            window.CategoryCatalog = instance;
+        }
+    });
+
+    window.Accounts = {
+        "accounts": [
+          { "address": '0x82372670115c971de24e74e3ddc2bda313035845', "name": 'Admin' },
+          { "address": '0xadaa44f921bebafeb1150d1a915f19e2fb871811', "name": 'Patient' },
+        ]
+    };
+
+    if (web3.eth.accounts.length != 1) {
+        alert('Accounts object is invalid');
+    } else {
+        for (var i = 0; i < Accounts.accounts.length; i++) {
+            if (Accounts.accounts[i].address == web3.eth.accounts[0]) {
+                $("#accountName").text(Accounts.accounts[i].name);
+            }
+        }
+        $("#accountAddress").text(web3.eth.accounts[0]);
+    }
+}
+
+window.addEventListener('load', function() {
+    //Init();
+});
+
+/*
+ * Contract util functions
+ */
 function LoadContractMetadata(path) {
     var contract;
 
@@ -17,37 +81,15 @@ function GetContractAddress(contract) {
     return contract.networks[Object.keys(contract.networks)[0]].address;
 }
 
-function Init() {
-    if (typeof web3 !== 'undefined')
-    {
-        window.web3 = new Web3(web3.currentProvider);
-    } 
-    else 
-    {
-        window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-    }
-    
-    var patientFactoryMetadata = LoadContractMetadata('/contracts/PatientFactory.json');
-    var patientFactoryContract = web3.eth.contract(patientFactoryMetadata.abi);
-    var patientFactoryAddress = GetContractAddress(patientFactoryMetadata);
-
-    patientFactoryContract.at(patientFactoryAddress, function(error, instance) {
-        if (error) {
-            alert('Unable to load PatientFactory@' + patientFactoryAddress);
-        } else {
-            window.PatientFactory = instance;
-        }
-    });
-}
-
+/*
+ * Patient functions
+ */
 function InitPatient() {
     PatientFactory.GetPatient.call(function(error, result) {
         if (error) {
             alert('GetPatient call failed');
         } else {
-            
             $("#patientAddress").text(result.substring(0,7) + '...');
-
             if (Number(result) == 0) { 
                 $("#createButton").attr('class', '');
                 $("#destroyButton").attr('class', 'disabled');
@@ -55,7 +97,6 @@ function InitPatient() {
                 $("#createButton").attr('class', 'disabled');
                 $("#destroyButton").attr('class', '');
             }
-            
         }
     });
 }
@@ -79,7 +120,3 @@ function DestroyPatient() {
         }
     });
 }
-
-window.addEventListener('load', function() {
-    //Init();
-})
