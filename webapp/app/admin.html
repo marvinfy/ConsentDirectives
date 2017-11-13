@@ -41,6 +41,13 @@
         <h3 class="text-muted">Admin Access</h3>
       </div>
 
+      <div id="adminDiv" style="display:none">
+        You are the admin
+      </div>
+
+      <div id="nonAdminDiv" style="display:none">
+        <div class="alert alert-danger" role="alert">Access denied -- You are not the system administrator</div>
+      </div>
 
       <div class="footer">
         <p><b><span id="accountName">Unkown</span></b> @ <span id="accountAddress">0x000000...</span></p>
@@ -76,6 +83,7 @@
 
     <script>
       Init();
+      InitAdmin();
     </script>
     
   </body>

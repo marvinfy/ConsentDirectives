@@ -28,7 +28,6 @@ function Init() {
     var categoryCatalogMetadata = LoadContractMetadata('/contracts/CategoryCatalog.json');
     var categoryCatalogContract = web3.eth.contract(categoryCatalogMetadata.abi);
     var categoryCatalogAddress = GetContractAddress(categoryCatalogMetadata);
-
     categoryCatalogContract.at(categoryCatalogAddress, function(error, instance) {
         if (error) {
             alert('Unable to load CategoryCatalog@' + categoryCatalogAddress);
@@ -37,6 +36,7 @@ function Init() {
         }
     });
 
+    // Hardcoded account addresses (PoC)
     window.Accounts = {
         "accounts": [
           { "address": '0x82372670115c971de24e74e3ddc2bda313035845', "name": 'Admin' },
@@ -44,6 +44,7 @@ function Init() {
         ]
     };
 
+    // Title and footer
     $(document).attr("title", GetAccountName() + " Actor");
     $("#accountName").text(GetAccountName());
     $("#accountAddress").text(GetAccountAddress());
@@ -129,6 +130,24 @@ function DestroyPatient() {
             alert('Delete transaction failed');
         } else {
             location.reload();
+        }
+    });
+}
+/*
+ * Admin functions
+ */
+function InitAdmin() {
+    CategoryCatalog.Owner.call(function(error, result) {
+        if (error) {
+            alert('Owner call failed');
+        } else {
+            if (GetAccountAddress() == result) {
+                $("#adminDiv").show();
+                $("#nonAdminDiv").hide();                
+            } else {
+                $("#adminDiv").hide();
+                $("#nonAdminDiv").show();
+            }
         }
     });
 }
