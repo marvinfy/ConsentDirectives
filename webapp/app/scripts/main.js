@@ -38,7 +38,14 @@ function Init() {
     window.Accounts = {
         "accounts": [
             { "address": '0x82372670115c971de24e74e3ddc2bda313035845', "name": 'Admin' },
-            { "address": '0xadaa44f921bebafeb1150d1a915f19e2fb871811', "name": 'Patient' },
+            { "address": '0xadaa44f921bebafeb1150d1a915f19e2fb871811', "name": 'P (Patient)' },
+            { "address": '0x7069faff133af5180d415a7d12434aade4ea9ce6', "name": 'R (Reception, MD)' },
+            { "address": '0xe1c60880d21066ed56c333671055168327bc3327', "name": 'MD' },
+            { "address": '0x6cf5c2553dc61467f17df1ef8fa91a56228832cf', "name": 'R2 (Reception 2, blood services)' },
+            { "address": '0x81f69cda59270603f2c857a1a87fd4464f05c073', "name": 'BSS (Blood Services Staff)' },
+            { "address": '0x7714ca612ac855ef9cbf135b71f3d00673f23fff', "name": 'N (Nurse)' },
+            { "address": '0x89b8e3dc2c9bf85712aba5e05dde0c53c09ec314', "name": 'T (Technician)' },
+            { "address": '0x15e70fa91eac37e06b095d8fa32071771b3758f4', "name": 'HIC (MD?)' },
         ]
     };
 
