@@ -28,6 +28,10 @@ contract CategoryCatalog {
     delete Categories[i];
   }
 
+  function RemoveAll() OwnerOnly {
+    Categories = new Category[](0);
+  }
+
   function Update(uint i, Category category) OwnerOnly {
     Categories[i] = category;
   }

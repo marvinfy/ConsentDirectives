@@ -42,7 +42,35 @@
       </div>
 
       <div id="adminDiv" style="display:none">
-        You are the admin
+        <h4>Categories</h4>
+
+        <div id="noCategoriesDiv" style="display:none">
+          <h5>No categories have been found. <a href="#" onclick="AddSomeCategories()">Add some.</a></h5>
+        </div>
+        <div id="categoriesDiv" style="display:none">
+          <h3>Categories available:</h3>
+          <div class="row">
+              <div class="col-lg-6">
+                <div class="input-group">
+                  <input type="text" class="form-control" placeholder="Category Name">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">Add Category</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="input-group">
+                  <span class="input-group-addon">
+                    <input type="checkbox" aria-label="...">
+                  </span>
+                  <input type="text" class="form-control" aria-label="..." value="Description" disabled>
+                </div>
+              </div>
+            </div>
+        </div>
+
       </div>
 
       <div id="nonAdminDiv" style="display:none">
