@@ -1,48 +1,147 @@
+var Category = artifacts.require("./Category.sol");
+var CategoryCatalog = artifacts.require("./CategoryCatalog.sol");
 var PatientFactory = artifacts.require("./PatientFactory.sol");
 var Patient = artifacts.require("./Patient.sol");
 
-var Actors = [
-    { "address": '0x82372670115c971de24e74e3ddc2bda313035845', "name": 'Admin' },
-    { "address": '0xadaa44f921bebafeb1150d1a915f19e2fb871811', "name": 'P' },
-    { "address": '0x7069faff133af5180d415a7d12434aade4ea9ce6', "name": 'R' },
-    { "address": '0xe1c60880d21066ed56c333671055168327bc3327', "name": 'MD' },
-    { "address": '0x6cf5c2553dc61467f17df1ef8fa91a56228832cf', "name": 'R2' },
-    { "address": '0x81f69cda59270603f2c857a1a87fd4464f05c073', "name": 'BSS' },
-    { "address": '0x7714ca612ac855ef9cbf135b71f3d00673f23fff', "name": 'N' },
-    { "address": '0x89b8e3dc2c9bf85712aba5e05dde0c53c09ec314', "name": 'T' },
-    { "address": '0x15e70fa91eac37e06b095d8fa32071771b3758f4', "name": 'HIC' },
-    { "address": '0x0000000000000000000000000000000000000000', "name": '__unknown__' },
-];
+contract('User Story', function(accounts) {
+  var Actors;
+  var Permissions;
 
-function GetAccountAddress(actor) {
-  var length = Actors.length;
+  var Catalog;
 
-  for (var i = 0; i < length - 1; i++) {
-    if (Actors[i].name == actor) {
-      return Actors[i].address;
+  function GetAccountAddress(actor) {
+    for (var i = 0; i < Actors.length - 1; i++) {
+      if (Actors[i].name == actor) {
+        return Actors[i].address;
+      }
     }
+    return "0x0000000000000000000000000000000000000000";
   }
 
-  return Actors[length - 1].address;
-}
+  function GetPermission(name) {
+    for (var i = 0; i < Permissions.length - 1; i++) {
+      if (Permissions[i].name == name) {
+        return Permissions[i].value;
+      }
+    }
+    return 0;
+  }
 
+  it("Setup", function(done) {
+    Actors = [
+      { "address": accounts[0], "name": 'Admin' },
+      { "address": accounts[1], "name": 'P' },
+      { "address": accounts[2], "name": 'R' },
+      { "address": accounts[3], "name": 'MD' },
+      { "address": accounts[4], "name": 'R2' },
+      { "address": accounts[5], "name": 'BSS' },
+      { "address": accounts[6], "name": 'N' },
+      { "address": accounts[7], "name": 'T' },
+      { "address": accounts[8], "name": 'HIC' },
+    ];
 
-contract('All (User Story)', function(accounts) {
-  it("should return correct account addresses", function(done) {
-    var address;
-    
-    address = GetAccountAddress("Admin");
-    assert(address == Actors[0].address);
+    Permissions = [
+      { "value": 0x00000001, "name": 'delegate' },
 
-    address = GetAccountAddress("P");
-    assert(address == Actors[1].address);
+      { "value": 0x00000010, "name": 'view' },
+      { "value": 0x00000020, "name": 'modify' },
+      { "value": 0x00000040, "name": 'add note' },
+      { "value": 0x00000080, "name": 'pull chart' }
+    ];
 
-    address = GetAccountAddress("HIC");
-    assert(address == Actors[8].address);
+    // Catalog
+    var category;
 
-    address = GetAccountAddress("BlaBlaBla");
-    assert(address == Actors[9].address);
+    CategoryCatalog.deployed().then(function(instance) {
+      Catalog = instance;
 
-    done();
+    // Create a View Records category and add some consent data to it
+    }).then(function() {
+      return Category.new("View Records", {from: GetAccountAddress("Admin")});
+    }).then(function(instance) {
+      category = instance;      
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("view"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("modify"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("add note"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return Catalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
+
+    // Create a Pull Charts category and add some consent data to it
+    }).then(function() {
+      return Category.new("Pull Charts", {from: GetAccountAddress("Admin")});
+    }).then(function(instance) {
+      category = instance;      
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("view"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("modify"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("add note"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("pull chart"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return Catalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
+
+    // Create an Edit Records category and add some consent data to it
+    }).then(function() {
+      return Category.new("Edit Records", {from: GetAccountAddress("Admin")});
+    }).then(function(instance) {
+      category = instance;
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("modify"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("add note"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return Catalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
+
+    // Retrive all categories
+    }).then(function() {
+      return Catalog.GetAll.call();
+    }).then(function(instances) {
+      categories = instances;
+      assert.isTrue(categories.length == 3);
+
+    // Check View Records category
+    }).then(function() {
+      return Category.at(categories[0]);
+    }).then(function(instance) {
+      category = instance;
+      return category.Name.call();
+    }).then(function(name) {
+      assert(name == "View Records");
+      return category.GetConsentDataCount.call();
+    }).then(function(count) {
+      assert.isTrue(count == 3);
+      category.GetConsentData.call(0).then(function(data) {
+        assert(data.toNumber() == GetPermission("view"));
+        category.GetConsentData.call(1).then(function(data) {
+          assert(data.toNumber() == GetPermission("modify"));
+          category.GetConsentData.call(2).then(function(data) {
+            assert.isTrue(data.toNumber() == GetPermission("add note"));
+            done();
+          });
+        });
+      });
+    });
   });
+
+  it("Scenario 1", function(done) {
+    // Pre-requisites
+    // 1. MD can delegate consent (P)
+    // 2. R can view clinical records (MD)
+    
+    /*
+      var catalog;
+      var catViewRecords;
+      var catEditRecords;
+  
+      var categories;
+       var category;*/
+  
+    done();
+  }); 
+    
 });
