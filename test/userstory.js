@@ -6,6 +6,7 @@ var Patient = artifacts.require("./Patient.sol");
 contract('User Story', function(accounts) {
   var Actors;
   var Permissions;
+  var Categories;
 
   var TheCatalog;
   var ThePatient;
@@ -30,6 +31,8 @@ contract('User Story', function(accounts) {
       { "value": 0x00000040, "name": 'add note' },
       { "value": 0x00000080, "name": 'pull chart' }
     ];
+
+    Categories = [];
 
     done();
   });
@@ -87,14 +90,13 @@ contract('User Story', function(accounts) {
     }).then(function() {
       return TheCatalog.GetAll.call();
     }).then(function(instances) {
-      categories = instances;
-      assert.isTrue(categories.length == 3);
+      assert.isTrue(instances.length == 3);
+      Categories.push({"instance": Category.at(instances[0]), "name": "View"});
+      Categories.push({"instance": Category.at(instances[1]), "name": "Pull"});
+      Categories.push({"instance": Category.at(instances[2]), "name": "Edit"});
 
-    // Check View Records category
     }).then(function() {
-      return Category.at(categories[0]);
-    }).then(function(instance) {
-      category = instance;
+      category = GetCategoryInstance("View");
       return category.Name.call();
     }).then(function(name) {
       assert(name == "View Records");
@@ -135,7 +137,13 @@ contract('User Story', function(accounts) {
   });
 
   it("Scenario 1", function(done) {
+    //
     // Consent for user R to pull chart id?
+    //
+
+    var rAccount = GetAccountAddress("R");
+
+    //patient.ConsentsTo.call(accounts[1], catView.address);
 
     
 
@@ -170,6 +178,15 @@ contract('User Story', function(accounts) {
     for (var i = 0; i < Permissions.length - 1; i++) {
       if (Permissions[i].name == name) {
         return Permissions[i].value;
+      }
+    }
+    return 0;
+  }
+
+  function GetCategoryInstance(name) {
+    for (var i = 0; i < Categories.length - 1; i++) {
+      if (Categories[i].name == name) {
+        return Categories[i].instance;
       }
     }
     return 0;
