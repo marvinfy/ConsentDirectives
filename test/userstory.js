@@ -30,7 +30,10 @@ contract('User Story', function(accounts) {
       { "value": 0x00000010, "name": 'view' },
       { "value": 0x00000020, "name": 'modify' },
       { "value": 0x00000040, "name": 'add note' },
-      { "value": 0x00000080, "name": 'pull chart' }
+      { "value": 0x00000080, "name": 'pull chart' },
+      { "value": 0x00000100, "name": 'order' },
+      { "value": 0x00000200, "name": 'view order' },
+      { "value": 0x00000400, "name": 'diagnosis' },
     ];
 
     Categories = [];
@@ -190,12 +193,10 @@ contract('User Story', function(accounts) {
 
     // MD will have permission to do anything, including 
     // consent on behalf of the patient...
-    var permissions = 
-      GetPermission('delegate') +
-      GetPermission('view') +
-      GetPermission('modify') +
-      GetPermission('add note') +
-      GetPermission('pull chart');
+    var permissions = 0;
+    for (var i = 0; i < Permissions.length; i++) {
+      permissions += Permissions[i].value;
+    }
 
     // Add permissions...
     ConsentDirective.new(md, permissions).then(function(instance) {
@@ -221,6 +222,23 @@ contract('User Story', function(accounts) {
       done();
     });
   });
+
+  it("Scenario 4", function(done) {
+    //
+    // 1. Consent for MD to modify Electronic Health Record?
+    // 2. Add consent for Technician to view req and submit report
+    // 
+    var md = GetAccountAddress("MD");
+
+    ThePatient.ConsentsTo.call(md, GetCategoryAddress("Edit")).then(function(consents) {
+      assert.isTrue(consents);
+
+    // md can delegate consent, so we will add consent to Technician
+    }).then(function() {
+      done();
+    });
+  });
+
 
 
   //
