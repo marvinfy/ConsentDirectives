@@ -1,5 +1,6 @@
 var Category = artifacts.require("./Category.sol");
 var CategoryCatalog = artifacts.require("./CategoryCatalog.sol");
+var ConsentDirective = artifacts.require("./ConsentDirective.sol");
 var PatientFactory = artifacts.require("./PatientFactory.sol");
 var Patient = artifacts.require("./Patient.sol");
 
@@ -86,7 +87,7 @@ contract('User Story', function(accounts) {
     }).then(function() {
       return TheCatalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
 
-    // Retrive all categories
+    // Retrive and store all categories
     }).then(function() {
       return TheCatalog.GetAll.call();
     }).then(function(instances) {
@@ -95,6 +96,7 @@ contract('User Story', function(accounts) {
       Categories.push({"instance": Category.at(instances[1]), "name": "Pull"});
       Categories.push({"instance": Category.at(instances[2]), "name": "Edit"});
 
+    // Validate the 'View Records' category
     }).then(function() {
       category = GetCategoryInstance("View");
       return category.Name.call();
@@ -140,26 +142,25 @@ contract('User Story', function(accounts) {
     //
     // Consent for user R to pull chart id?
     //
+    var r = GetAccountAddress("R");
 
-    var rAccount = GetAccountAddress("R");
+    // Initially R doesn't have consent, so ConsentsTo should fail
+    ThePatient.ConsentsTo.call(r, GetCategoryAddress("Pull")).then(function(consents) {
+      assert.isFalse(consents);
 
-    //patient.ConsentsTo.call(accounts[1], catView.address);
+    // So ThePatient adds a consent directive to allow R to pull charts
+    }).then(function() {
+      return ConsentDirective.new(r, GetPermission("pull chart"));
+    }).then(function(instance) {
+      return ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: GetAccountAddress("P")});
 
-    
-
-    // Pre-requisites
-    // 1. MD can delegate consent (P)
-    // 2. R can view clinical records (MD)
-    
-    /*
-      var catalog;
-      var catViewRecords;
-      var catEditRecords;
-  
-      var categories;
-       var category;*/
-  
-    done();
+    // Now ConsentsTo should succeed
+    }).then(function() {
+      return ThePatient.ConsentsTo.call(r, GetCategoryAddress("Pull"));
+    }).then(function(consents) {
+      assert.isTrue(consents);
+      done();
+    });
   }); 
 
   //
@@ -190,6 +191,14 @@ contract('User Story', function(accounts) {
       }
     }
     return 0;
+  }
+
+  function GetCategoryAddress(name) {
+    var instance = GetCategoryInstance(name);
+    if (instance == 0) {
+      return 0;
+    }
+    return instance.address;
   }
 
 });
