@@ -201,25 +201,26 @@ contract('User Story', function(accounts) {
     ConsentDirective.new(md, permissions).then(function(instance) {
       return ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: GetAccountAddress("P")});
 
-    // Now let's test for some categories...
+    // Now let's test -- Consent for MD to access records?
     }).then(function() {
       return ThePatient.ConsentsTo.call(md, GetCategoryAddress("View"));
     }).then(function(consents) {
       assert.isTrue(consents);
-    }).then(function() {
-      return ThePatient.ConsentsTo.call(md, GetCategoryAddress("Pull"));
-    }).then(function(consents) {
-      assert.isTrue(consents);        
-    }).then(function() {
-      return ThePatient.ConsentsTo.call(md, GetCategoryAddress("Edit"));
-    }).then(function(consents) {
-      assert.isTrue(consents);
-
       done();
     });
-
   });
 
+  it("Scenario 3", function(done) {
+    //
+    // Consent for MD to modify records?
+    //
+    var md = GetAccountAddress("MD");
+
+    ThePatient.ConsentsTo.call(md, GetCategoryAddress("Edit")).then(function(consents) {
+      assert.isTrue(consents);
+      done();
+    });
+  });
 
 
   //
