@@ -87,14 +87,25 @@ contract('User Story', function(accounts) {
     }).then(function() {
       return TheCatalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
 
+    // Create an Delegate category and add some consent data to it
+    }).then(function() {
+      return Category.new("Consent", {from: GetAccountAddress("Admin")});
+    }).then(function(instance) {
+      category = instance;
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("delegate"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return TheCatalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
+
     // Retrive and store all categories
     }).then(function() {
       return TheCatalog.GetAll.call();
     }).then(function(instances) {
-      assert.isTrue(instances.length == 3);
+      assert.isTrue(instances.length == 4);
       Categories.push({"instance": Category.at(instances[0]), "name": "View"});
       Categories.push({"instance": Category.at(instances[1]), "name": "Pull"});
       Categories.push({"instance": Category.at(instances[2]), "name": "Edit"});
+      Categories.push({"instance": Category.at(instances[3]), "name": "Delegate"});
 
     // Validate the 'View Records' category
     }).then(function() {
@@ -159,9 +170,57 @@ contract('User Story', function(accounts) {
       return ThePatient.ConsentsTo.call(r, GetCategoryAddress("Pull"));
     }).then(function(consents) {
       assert.isTrue(consents);
+
+    // But R should be allowed to, for instance, View
+    }).then(function() {
+      return ThePatient.ConsentsTo.call(r, GetCategoryAddress("View"));
+    }).then(function(consents) {
+      assert.isFalse(consents);
+
+      // Aaaaaaannnnnd... we're done with Scenario 1..
       done();
     });
-  }); 
+  });
+
+  it("Scenario 2", function(done) {
+    //
+    // Consent for MD to access records?
+    //
+    var md = GetAccountAddress("MD");
+
+    // MD will have permission to do anything, including 
+    // consent on behalf of the patient...
+    var permissions = 
+      GetPermission('delegate') +
+      GetPermission('view') +
+      GetPermission('modify') +
+      GetPermission('add note') +
+      GetPermission('pull chart');
+
+    // Add permissions...
+    ConsentDirective.new(md, permissions).then(function(instance) {
+      return ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: GetAccountAddress("P")});
+
+    // Now let's test for some categories...
+    }).then(function() {
+      return ThePatient.ConsentsTo.call(md, GetCategoryAddress("View"));
+    }).then(function(consents) {
+      assert.isTrue(consents);
+    }).then(function() {
+      return ThePatient.ConsentsTo.call(md, GetCategoryAddress("Pull"));
+    }).then(function(consents) {
+      assert.isTrue(consents);        
+    }).then(function() {
+      return ThePatient.ConsentsTo.call(md, GetCategoryAddress("Edit"));
+    }).then(function(consents) {
+      assert.isTrue(consents);
+
+      done();
+    });
+
+  });
+
+
 
   //
   // Util functions
