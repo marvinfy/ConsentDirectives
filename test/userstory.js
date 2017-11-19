@@ -33,7 +33,8 @@ contract('User Story', function(accounts) {
       { "value": 0x00000080, "name": 'pull chart' },
       { "value": 0x00000100, "name": 'order' },
       { "value": 0x00000200, "name": 'view order' },
-      { "value": 0x00000400, "name": 'diagnosis' },
+      { "value": 0x00000400, "name": 'submit order report' },
+      { "value": 0x00000800, "name": 'diagnosis' },
     ];
 
     Categories = [];
@@ -52,7 +53,8 @@ contract('User Story', function(accounts) {
     }).then(function() {
       return Category.new("View Records", {from: GetAccountAddress("Admin")});
     }).then(function(instance) {
-      category = instance;      
+      category = instance;
+      Categories.push({"instance": instance, "name": "View"});
     }).then(function() {
       return category.AddConsentData.sendTransaction(GetPermission("view"), {from: GetAccountAddress("Admin")});
     }).then(function() {
@@ -66,7 +68,8 @@ contract('User Story', function(accounts) {
     }).then(function() {
       return Category.new("Pull Charts", {from: GetAccountAddress("Admin")});
     }).then(function(instance) {
-      category = instance;      
+      category = instance;
+      Categories.push({"instance": instance, "name": "Pull"});
     }).then(function() {
       return category.AddConsentData.sendTransaction(GetPermission("view"), {from: GetAccountAddress("Admin")});
     }).then(function() {
@@ -83,6 +86,7 @@ contract('User Story', function(accounts) {
       return Category.new("Edit Records", {from: GetAccountAddress("Admin")});
     }).then(function(instance) {
       category = instance;
+      Categories.push({"instance": instance, "name": "Edit"});
     }).then(function() {
       return category.AddConsentData.sendTransaction(GetPermission("modify"), {from: GetAccountAddress("Admin")});
     }).then(function() {
@@ -90,25 +94,42 @@ contract('User Story', function(accounts) {
     }).then(function() {
       return TheCatalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
 
-    // Create an Delegate category and add some consent data to it
+    // Create a View Order category and add some consent data to it
     }).then(function() {
-      return Category.new("Consent", {from: GetAccountAddress("Admin")});
+      return Category.new("View Order", {from: GetAccountAddress("Admin")});
     }).then(function(instance) {
       category = instance;
+      Categories.push({"instance": instance, "name": "View Order"});
     }).then(function() {
-      return category.AddConsentData.sendTransaction(GetPermission("delegate"), {from: GetAccountAddress("Admin")});
+      return category.AddConsentData.sendTransaction(GetPermission("view order"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("submit order report"), {from: GetAccountAddress("Admin")});
     }).then(function() {
       return TheCatalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
+
+    // Create a Submit Order Report category and add some consent data to it
+    }).then(function() {
+      return Category.new("Submit Order Report", {from: GetAccountAddress("Admin")});
+    }).then(function(instance) {
+      category = instance;
+      Categories.push({"instance": instance, "name": "Submit Order Report"});
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("submit order report"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return TheCatalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
+
+    }).then(function() {
+      return Category.new("Dummy", {from: GetAccountAddress("Admin")});
+    }).then(function(category) {
+      Categories.push({"instance": category, "name": "Dummy"});
+      return TheCatalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
+
 
     // Retrive and store all categories
     }).then(function() {
       return TheCatalog.GetAll.call();
     }).then(function(instances) {
-      assert.isTrue(instances.length == 4);
-      Categories.push({"instance": Category.at(instances[0]), "name": "View"});
-      Categories.push({"instance": Category.at(instances[1]), "name": "Pull"});
-      Categories.push({"instance": Category.at(instances[2]), "name": "Edit"});
-      Categories.push({"instance": Category.at(instances[3]), "name": "Delegate"});
+      assert.isTrue(instances.length == 6);
 
     // Validate the 'View Records' category
     }).then(function() {
@@ -168,19 +189,18 @@ contract('User Story', function(accounts) {
     }).then(function(instance) {
       return ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: GetAccountAddress("P")});
 
-    // Now ConsentsTo should succeed
+    // Request to Blockchain
+    // Consent for user R to pull chart id?
     }).then(function() {
       return ThePatient.ConsentsTo.call(r, GetCategoryAddress("Pull"));
     }).then(function(consents) {
       assert.isTrue(consents);
 
-    // But R should be allowed to, for instance, View
+    // But R should not be allowed to, for instance, View
     }).then(function() {
       return ThePatient.ConsentsTo.call(r, GetCategoryAddress("View"));
     }).then(function(consents) {
       assert.isFalse(consents);
-
-      // Aaaaaaannnnnd... we're done with Scenario 1..
       done();
     });
   });
@@ -202,7 +222,8 @@ contract('User Story', function(accounts) {
     ConsentDirective.new(md, permissions).then(function(instance) {
       return ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: GetAccountAddress("P")});
 
-    // Now let's test -- Consent for MD to access records?
+    // Request to Blockchain
+    // Consent for MD to access records?
     }).then(function() {
       return ThePatient.ConsentsTo.call(md, GetCategoryAddress("View"));
     }).then(function(consents) {
@@ -217,6 +238,8 @@ contract('User Story', function(accounts) {
     //
     var md = GetAccountAddress("MD");
 
+    // Request to Blockchain
+    // Consent for MD to access records?
     ThePatient.ConsentsTo.call(md, GetCategoryAddress("Edit")).then(function(consents) {
       assert.isTrue(consents);
       done();
@@ -229,12 +252,33 @@ contract('User Story', function(accounts) {
     // 2. Add consent for Technician to view req and submit report
     // 
     var md = GetAccountAddress("MD");
+    var t = GetAccountAddress("T");
 
+    // Request to Blockchain
+    // Consent for MD to add to modify Electronic Health Record?
     ThePatient.ConsentsTo.call(md, GetCategoryAddress("Edit")).then(function(consents) {
       assert.isTrue(consents);
 
-    // md can delegate consent, so we will add consent to Technician
+    // Add consent for Technician to view req and submit report?
     }).then(function() {
+      var permissions = 
+        GetPermission("view order") +
+        GetPermission("submit order report");
+
+      return ConsentDirective.new(t, permissions);
+    }).then(function(instance) {
+      return ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: md});
+
+    // Now we check if t has the required permissions
+    }).then(function() {
+      return ThePatient.ConsentsTo.call(t, GetCategoryAddress("View Order"));
+    }).then(function(consents) {
+      assert.isTrue(consents);
+    }).then(function() {
+      return ThePatient.ConsentsTo.call(t, GetCategoryAddress("Submit Order Report"));
+    }).then(function(consents) {
+      assert.isTrue(consents);
+
       done();
     });
   });
