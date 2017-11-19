@@ -7,27 +7,10 @@ contract('User Story', function(accounts) {
   var Actors;
   var Permissions;
 
-  var Catalog;
+  var TheCatalog;
+  var ThePatient;
 
-  function GetAccountAddress(actor) {
-    for (var i = 0; i < Actors.length - 1; i++) {
-      if (Actors[i].name == actor) {
-        return Actors[i].address;
-      }
-    }
-    return "0x0000000000000000000000000000000000000000";
-  }
-
-  function GetPermission(name) {
-    for (var i = 0; i < Permissions.length - 1; i++) {
-      if (Permissions[i].name == name) {
-        return Permissions[i].value;
-      }
-    }
-    return 0;
-  }
-
-  it("Setup", function(done) {
+  it("Static setup", function(done) {
     Actors = [
       { "address": accounts[0], "name": 'Admin' },
       { "address": accounts[1], "name": 'P' },
@@ -42,18 +25,21 @@ contract('User Story', function(accounts) {
 
     Permissions = [
       { "value": 0x00000001, "name": 'delegate' },
-
       { "value": 0x00000010, "name": 'view' },
       { "value": 0x00000020, "name": 'modify' },
       { "value": 0x00000040, "name": 'add note' },
       { "value": 0x00000080, "name": 'pull chart' }
     ];
 
-    // Catalog
+    done();
+  });
+
+  it("Category setup", function(done) {
     var category;
 
+    // Get the CategoryCatalog instance
     CategoryCatalog.deployed().then(function(instance) {
-      Catalog = instance;
+      TheCatalog = instance;
 
     // Create a View Records category and add some consent data to it
     }).then(function() {
@@ -67,7 +53,7 @@ contract('User Story', function(accounts) {
     }).then(function() {
       return category.AddConsentData.sendTransaction(GetPermission("add note"), {from: GetAccountAddress("Admin")});
     }).then(function() {
-      return Catalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
+      return TheCatalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
 
     // Create a Pull Charts category and add some consent data to it
     }).then(function() {
@@ -83,7 +69,7 @@ contract('User Story', function(accounts) {
     }).then(function() {
       return category.AddConsentData.sendTransaction(GetPermission("pull chart"), {from: GetAccountAddress("Admin")});
     }).then(function() {
-      return Catalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
+      return TheCatalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
 
     // Create an Edit Records category and add some consent data to it
     }).then(function() {
@@ -95,11 +81,11 @@ contract('User Story', function(accounts) {
     }).then(function() {
       return category.AddConsentData.sendTransaction(GetPermission("add note"), {from: GetAccountAddress("Admin")});
     }).then(function() {
-      return Catalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
+      return TheCatalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
 
     // Retrive all categories
     }).then(function() {
-      return Catalog.GetAll.call();
+      return TheCatalog.GetAll.call();
     }).then(function(instances) {
       categories = instances;
       assert.isTrue(categories.length == 3);
@@ -128,7 +114,31 @@ contract('User Story', function(accounts) {
     });
   });
 
+  it("Patient setup", function(done) {
+    var patientFactory;
+    var patientAccount = GetAccountAddress("P");
+
+    PatientFactory.deployed().then(function(instance) {
+      patientFactory = instance;
+      patientFactory.MakePatient.sendTransaction({from: patientAccount});
+    }).then(function() {
+      return patientFactory.GetPatient.call({from: patientAccount});
+    }).then(function(address) {
+      return Patient.at(address);
+    }).then(function(instance) {
+      ThePatient = instance;
+      return ThePatient.GetOwner.call();
+    }).then(function(address) {
+      assert.equal(address, patientAccount);
+      done();
+    });
+  });
+
   it("Scenario 1", function(done) {
+    // Consent for user R to pull chart id?
+
+    
+
     // Pre-requisites
     // 1. MD can delegate consent (P)
     // 2. R can view clinical records (MD)
@@ -143,5 +153,26 @@ contract('User Story', function(accounts) {
   
     done();
   }); 
-    
+
+  //
+  // Util functions
+  //
+  function GetAccountAddress(actor) {
+    for (var i = 0; i < Actors.length - 1; i++) {
+      if (Actors[i].name == actor) {
+        return Actors[i].address;
+      }
+    }
+    return "0x0000000000000000000000000000000000000000";
+  }
+
+  function GetPermission(name) {
+    for (var i = 0; i < Permissions.length - 1; i++) {
+      if (Permissions[i].name == name) {
+        return Permissions[i].value;
+      }
+    }
+    return 0;
+  }
+
 });
