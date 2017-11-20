@@ -319,8 +319,20 @@ contract('User Story', function(accounts) {
     }).then(function(instance) {
       done();
     });
+  });
 
+  it("Scenario 6", function(done) {
+    //
+    // Consent for N to pull req? -- BSS can view req by P
+    //
+    var bss = GetAccountAddress("BSS");
 
+    // Request to Blockchain
+    // Consent for MD to access records?
+    ThePatient.ConsentsTo.call(bss, GetCategoryAddress("View Order")).then(function(consents) {
+      assert.isTrue(consents);
+      done();
+    });
   });
 
   //
