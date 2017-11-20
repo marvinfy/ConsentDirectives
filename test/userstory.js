@@ -34,7 +34,7 @@ contract('User Story', function(accounts) {
       { "value": 0x00000100, "name": 'order' },
       { "value": 0x00000200, "name": 'view order' },
       { "value": 0x00000400, "name": 'submit order report' },
-      { "value": 0x00000800, "name": 'diagnosis' },
+      { "value": 0x00000800, "name": 'enter order codes' },
     ];
 
     Categories = [];
@@ -118,6 +118,17 @@ contract('User Story', function(accounts) {
     }).then(function() {
       return TheCatalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
 
+    // Create a Enter Order Codes category and add some consent data to it
+    }).then(function() {
+      return Category.new("Enter Order Codes", {from: GetAccountAddress("Admin")});
+    }).then(function(instance) {
+      category = instance;
+      Categories.push({"instance": instance, "name": "Enter Order Codes"});
+    }).then(function() {
+      return category.AddConsentData.sendTransaction(GetPermission("enter order codes"), {from: GetAccountAddress("Admin")});
+    }).then(function() {
+      return TheCatalog.Add.sendTransaction(category.address, {from: GetAccountAddress("Admin")});
+
     }).then(function() {
       return Category.new("Dummy", {from: GetAccountAddress("Admin")});
     }).then(function(category) {
@@ -129,7 +140,7 @@ contract('User Story', function(accounts) {
     }).then(function() {
       return TheCatalog.GetAll.call();
     }).then(function(instances) {
-      assert.isTrue(instances.length == 6);
+      assert.isTrue(instances.length == 7);
 
     // Validate the 'View Records' category
     }).then(function() {
@@ -291,14 +302,15 @@ contract('User Story', function(accounts) {
     var p = GetAccountAddress("P");
     var r2 = GetAccountAddress("R2");
     var bss = GetAccountAddress("BSS");
+    var n = GetAccountAddress("N");
 
     var permissions;
     
     // Add consent for R2
     permissions = GetPermission("view order");
     ConsentDirective.new(r2, permissions).then(function(instance) {
-      return ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: p});
-    }).then(function(instance) {
+      ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: p});
+    }).then(function() {
       return ThePatient.ConsentsTo.call(r2, GetCategoryAddress("View Order"));
     }).then(function(consents) {
       assert.isTrue(consents);
@@ -316,6 +328,13 @@ contract('User Story', function(accounts) {
     }).then(function(consents) {
       assert.isTrue(consents);
 
+      // Add consent for N
+    }).then(function(instance) {
+      permissions = GetPermission("view order") + GetPermission("submit order report");
+      return ConsentDirective.new(n, permissions);
+    }).then(function(instance) {
+      ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: p});
+
     }).then(function(instance) {
       done();
     });
@@ -326,14 +345,70 @@ contract('User Story', function(accounts) {
     // Consent for N to pull req? -- BSS can view req by P
     //
     var bss = GetAccountAddress("BSS");
+    var n = GetAccountAddress("N");
 
-    // Request to Blockchain
-    // Consent for MD to access records?
     ThePatient.ConsentsTo.call(bss, GetCategoryAddress("View Order")).then(function(consents) {
+      assert.isTrue(consents);
+    }).then(function() {
+      return ThePatient.ConsentsTo.call(n, GetCategoryAddress("View Order"));
+    }).then(function(consents) {
       assert.isTrue(consents);
       done();
     });
   });
+
+  it("Scenario 7", function(done) {
+    //
+    // P Add consent N to enter codes
+    // Consent to enter codes? (N)
+    // P Add consent to Tech to enter report
+    //
+    var p = GetAccountAddress("P");
+    var n = GetAccountAddress("N");
+    var t = GetAccountAddress("T");
+
+    
+    // P Add consent N to enter codes
+    permissions = GetPermission("enter order codes");
+    ConsentDirective.new(n, permissions).then(function(instance) {
+      ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: p});
+
+    // Consent to enter codes?
+    }).then(function() {
+      return ThePatient.ConsentsTo.call(n, GetCategoryAddress("Enter Order Codes"));
+    }).then(function(consents) {
+      assert.isTrue(consents);
+
+    // P Add consent to Tech to enter report
+    }).then(function() {
+      permissions = GetPermission("view order") + GetPermission("submit order report");
+      return ConsentDirective.new(t, permissions);
+    }).then(function(instance) {
+      ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: p});
+      done();
+    });
+  });
+
+  it("Scenario 8", function(done) {
+    //
+    // Consent to view
+    // Consent to enter report?
+    //
+    var t = GetAccountAddress("T");
+
+    // Consent to view order/request
+    ThePatient.ConsentsTo.call(t, GetCategoryAddress("View Order")).then(function(consents) {
+      assert.isTrue(consents);
+
+    // Consent to enter report?
+    }).then(function() {
+      return ThePatient.ConsentsTo.call(t, GetCategoryAddress("Submit Order Report"));
+    }).then(function(consents) {
+      assert.isTrue(consents);
+      done();
+    });
+  });
+
 
   //
   // Util functions
