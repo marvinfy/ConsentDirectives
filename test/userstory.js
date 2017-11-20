@@ -283,7 +283,45 @@ contract('User Story', function(accounts) {
     });
   });
 
+  it("Scenario 5", function(done) {
+    //
+    // 1. Add consent for R2 and Blood Services Staff to pull req?
+    // 2. Generate all subsequential consent directives
+    //
+    var p = GetAccountAddress("P");
+    var r2 = GetAccountAddress("R2");
+    var bss = GetAccountAddress("BSS");
 
+    var permissions;
+    
+    // Add consent for R2
+    permissions = GetPermission("view order");
+    ConsentDirective.new(r2, permissions).then(function(instance) {
+      return ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: p});
+    }).then(function(instance) {
+      return ThePatient.ConsentsTo.call(r2, GetCategoryAddress("View Order"));
+    }).then(function(consents) {
+      assert.isTrue(consents);
+
+      // Add consent for BSS
+      permissions = GetPermission("view order") + GetPermission("submit order report");
+      return ConsentDirective.new(bss, permissions);
+    }).then(function(instance) {
+      return ThePatient.AddConsentDirective.sendTransaction(instance.address, {from: p});
+    }).then(function(instance) {
+      return ThePatient.ConsentsTo.call(bss, GetCategoryAddress("View Order"));
+    }).then(function(consents) {
+      assert.isTrue(consents);
+      return ThePatient.ConsentsTo.call(bss, GetCategoryAddress("Submit Order Report"));
+    }).then(function(consents) {
+      assert.isTrue(consents);
+
+    }).then(function(instance) {
+      done();
+    });
+
+
+  });
 
   //
   // Util functions
