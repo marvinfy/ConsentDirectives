@@ -23,9 +23,6 @@
 </head>
 
 <body>
-  <!--[if IE]>
-      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
 
   <div class="container">
     <div class="header">
@@ -44,19 +41,20 @@
     </div>
 
     <div id="adminDiv" style="display:none">
-      <h4>Categories</h4>
-
+    
       <div id="categoriesManagementDiv">
+        
+        <h4>Add New Category</h4>
         <div id="permissionsDiv">
           <div id="permissionsHeaderDiv" class="row">
             <div id="permissionsIncludeDiv" class="col-lg-1">
               <b>Include</b>
             </div>
             <div id="permissionsNameDiv" class="col-lg-3">
-              <b>Name</b>
+              <b>Permission</b>
             </div>
             <div id="permissionsFlagsDiv" class="col-lg-4">
-              <b>Flags</b>
+              <b>Bit Flag</b>
             </div>
           </div>
         </div>
@@ -73,27 +71,39 @@
         </div>
 
         <div id="noCategoriesDiv" style="display:none">
-          <h5>No categories found</h5>
+          <h4>No Categories Found</h4>
         </div>
 
         <div id="categoriesDiv" style="display:none">
-          <h5>Categories found</h5>
+          <h4>Existing Categories (Semantics Catalog)</h4>
+
+          <div id="categoriesDisplayHeaderDiv" class="row">
+            <div id="categoriesDisplayNameDiv" class="col-lg-4">
+              <b>Name</b>
+            </div>
+            <div id="categoriesDisplayPermissionsDiv" class="col-lg-6">
+              <b>Permissions</b>
+            </div>
+          </div>
+
+          <div id="categoriesDisplayContentDiv">
+          </div>
         </div>
 
       </div>
+    </div>
 
-      <div id="nonAdminDiv" style="display:none">
-        <div class="alert alert-danger" role="alert">Access denied -- You are not the system administrator</div>
-      </div>
+    <div id="nonAdminDiv" style="display:none">
+      <div class="alert alert-danger" role="alert">Access denied -- You are not the system administrator</div>
+    </div>
 
-      <div class="footer">
-        <p>
-          <b>
-            <span id="accountName">Unkown</span>
-          </b> @
-          <span id="accountAddress">0x000000...</span>
-        </p>
-      </div>
+    <div class="footer">
+      <p>
+        <b>
+          <span id="accountName">Unkown</span>
+        </b> @
+        <span id="accountAddress">0x000000...</span>
+      </p>
     </div>
 
     <!-- build:js scripts/vendor.js -->

@@ -34,6 +34,18 @@ function Init() {
         }
     });
 
+    // Category contract
+    var categoryMetadata = LoadContractMetadata('/contracts/Category.json');
+    var categoryContract = web3.eth.contract(categoryMetadata.abi);
+    var categoryAddress = GetContractAddress(categoryMetadata);
+    categoryContract.at(categoryAddress, function (error, instance) {
+        if (error) {
+            alert('Unable to load category@' + categoryAddress);
+        } else {
+            window.Category = instance;
+        }
+    });
+
     // Hardcoded account addresses (PoC)
     window.Accounts = {
         "accounts": [
@@ -128,7 +140,7 @@ function CreatePatient() {
         if (error) {
             alert('MakePatient transaction failed');
         } else {
-            location.reload();
+            setTimeout(ReloadPage, 2000);
         }
     });
 }
@@ -138,10 +150,15 @@ function DestroyPatient() {
         if (error) {
             alert('Delete transaction failed');
         } else {
-            location.reload();
+            setTimeout(ReloadPage, 2000);
         }
     });
 }
+
+function ReloadPage() {
+    location.reload();
+}
+
 /*
  * Admin functions
  */
@@ -160,6 +177,15 @@ function InitConsentData() {
         { "value": 0x00000800, "name": 'Enter Order Codes' },
     ];
 
+}
+
+function GetPermissionName(value) {
+    for (var i = 0; i < Permissions.length; i++) {
+        if (Permissions[i].value == value) {
+            return Permissions[i].name;
+        }
+    }
+    return "Unknown";
 }
 
 function InitAdmin() {
@@ -198,11 +224,6 @@ function InitAdmin2() {
 }
 
 function InitAdmin3() {
-    /*
-        window.Permissions = [
-            { "value": 0x00000001, "name": 'Authority to Consent' },
-    */
-
     for (var i = 0; i < window.Permissions.length; i++) {
         var permission = window.Permissions[i];
         var newRow = $("#permissionsHeaderDiv").clone();
@@ -216,7 +237,8 @@ function InitAdmin3() {
         newRow.children("#permissionsFlagsDiv").text(res);
         newRow.appendTo("#permissionsDiv");
     }
-    //$("#permissionsHeaderDiv").clone()
+
+    LoadCategories();
 }
 
 function AddCategoryFromUi() {
@@ -227,8 +249,7 @@ function AddCategoryFromUi() {
         }
     });
 
-    var name = console.log($("#categoryNameInput").val());
-
+    var name = $("#categoryNameInput").val();
     AddCategory(name, permissions);
 }
 
@@ -243,13 +264,10 @@ function AddCategory(name, permissions) {
         if (error) {
             alert("Unable to estimate gas");
         } else {
-            console.log("Gas Estimate:" + gasEstimate);
-
-            var myContractReturned = MyContract.new({
+            MyContract.new(name, {
                 from: GetAccountAddress(),
                 data: bytecode,
-                gas: gasEstimate
-            }, function (err, myContract) {
+                gas: gasEstimate * 2}, function (err, myContract) {
                 if (!err) {
                     if (!myContract.address) {
                         console.log("Tx hash: " + myContract.transactionHash);
@@ -272,6 +290,16 @@ function AddCategory(name, permissions) {
 }
 
 function AddPermissions(category, permissions) {
+    category.Name.call(function(error, name) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Category name: ' + name);
+            console.log('Permissions to add: ' + permissions);
+        }
+    });
+ 
+    var count = 0;
     for (var i = 0; i < permissions.length; i++) {
         console.log('Will add consent data -- ' + permissions[i]);
         category.AddConsentData(permissions[i], function(error, result) { 
@@ -280,7 +308,65 @@ function AddPermissions(category, permissions) {
             }
             else {
                 console.log('Consent data added'); 
+                count++;
+
+                if (count == permissions.length) {
+                    LoadCategories();
+                }
             }
         });
     }
+
+}
+
+function LoadCategories() {
+    $("#categoriesDisplayContentDiv").text("");
+
+    CategoryCatalog.GetAll.call(function(error, categories) {
+        if (error) {
+            console.log('Error loading categories'); 
+        } else {
+            console.log('Categories loaded'); 
+            for (var i = 0; i < categories.length; i++) {
+
+                var categoryMetadata = LoadContractMetadata('/contracts/Category.json');
+                var categoryContract = web3.eth.contract(categoryMetadata.abi);
+                categoryContract.at(categories[i], function (error, instance) {
+                    if (error) {
+                        console.log('Unable to load Category instance');
+                    } else {
+                        console.log('Category address -- ' + categories[i]);
+
+                        instance.Name.call(function(error, name) {
+                            if (error) {
+                                console.log('Unable to load Category name');
+                            } else {
+                                instance.GetAllConsentData.call(function(error, data) {
+                                    if (error) {
+                                        console.log('Unable to load Category consent data');
+                                    } else {
+                                        var newRow = $("#categoriesDisplayHeaderDiv").clone();
+                                        newRow.children("#categoriesDisplayNameDiv").text(name);
+
+                                        var description = "";
+                                        for (var i = 0; i < data.length; i++) {
+                                            description += GetPermissionName(data[i].toNumber()) + "; ";
+                                        }
+                                        newRow.children("#categoriesDisplayPermissionsDiv").text(description);
+                                        
+                                        newRow.appendTo("#categoriesDisplayContentDiv");
+                                    }
+
+                                });
+
+                            }
+                        });
+
+
+                    }
+                });
+                
+            }
+        }
+    });
 }
