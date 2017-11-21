@@ -110,11 +110,12 @@ function InitPatient() {
         if (error) {
             alert('GetPatient call failed');
         } else {
-            $("#patientAddress").text(result.substring(0, 7) + '...');
             if (Number(result) == 0) {
+                $("#patientHeading").text("You're not a patient");
                 $("#createButton").attr('class', '');
                 $("#destroyButton").attr('class', 'disabled');
             } else {
+                $("#patientHeading").text('Patient @ ' + result.substring(0, 9) + '...');
                 $("#createButton").attr('class', 'disabled');
                 $("#destroyButton").attr('class', '');
             }
@@ -147,48 +148,16 @@ function DestroyPatient() {
 function InitConsentData() {
     // TODO add each bit as a Category in the category catalog
 
-    window.Accounts = [
-        // [00-03]	Authority to consent | Specific record | reserved | reserved
+    window.Permissions = [
         { "value": 0x00000001, "name": 'Authority to Consent' },
-        { "value": 0x00000002, "name": 'Specific Record' },
-        { "value": 0x00000004, "name": 'Reserved' },
-        { "value": 0x00000008, "name": 'Reserved' },
-
-        // [04-15]	Access type / Permissions		
         { "value": 0x00000010, "name": 'View' },
         { "value": 0x00000020, "name": 'Modify' },
         { "value": 0x00000040, "name": 'Add Note' },
-        { "value": 0x00000080, "name": 'Consult' },
+        { "value": 0x00000080, "name": 'Pull Chart' },
         { "value": 0x00000100, "name": 'Order' },
-        { "value": 0x00000200, "name": 'Diagnosis' },
-        //{ "value": 0x00000400, "name": 'Reserved' },
-        //{ "value": 0x00000800, "name": 'Reserved' },
-        //{ "value": 0x00001000, "name": 'Reserved' },
-        //{ "value": 0x00002000, "name": 'Reserved' },
-        //{ "value": 0x00004000, "name": 'Reserved' },
-        //{ "value": 0x00008000, "name": 'Reserved' },
-
-        // [16-23]	Type of record
-        { "value": 0x00010000, "name": 'X-Ray' },
-        { "value": 0x00020000, "name": 'Lab reports' },
-        { "value": 0x00040000, "name": 'Prescription' },
-        //{ "value": 0x00080000, "name": 'Reserved' },
-        //{ "value": 0x00100000, "name": 'Reserved' },
-        //{ "value": 0x00200000, "name": 'Reserved' },
-        //{ "value": 0x00400000, "name": 'Reserved' },
-        //{ "value": 0x00800000, "name": 'Reserved' },
-
-        // [24-27]	Origin
-        { "value": 0x01000000, "name": 'Eastern Health' },
-        { "value": 0x02000000, "name": 'Hospital Specific' },
-        { "value": 0x04000000, "name": 'Clinic Specific' },
-        //{ "value": 0x08000000, "name": 'Reserved' },
-
-        // [28-31]	Why/Rationale for creation
-        { "value": 0x10000000, "name": 'Primary Care' },
-        { "value": 0x20000000, "name": 'Treatment' },
-        { "value": 0x40000000, "name": 'Emergency' },
-        { "value": 0x80000000, "name": 'Record Correction' },
+        { "value": 0x00000200, "name": 'View Order' },
+        { "value": 0x00000400, "name": 'Submit Order Report' },
+        { "value": 0x00000800, "name": 'Enter Order Codes' },
     ];
 
 }
@@ -205,15 +174,17 @@ function InitAdmin() {
                 $("#adminDiv").hide();
                 $("#nonAdminDiv").show();
             }
+            InitAdmin2();
         }
     });
+}
 
+function InitAdmin2() {
     CategoryCatalog.GetAll.call(function (error, result) {
         if (error) {
             alert('GetAll call failed');
         } else {
             window.AllCategories = result;
-
             if (AllCategories.length == 0) {
                 $("#noCategoriesDiv").show();
                 $("#categoriesDiv").hide();
@@ -221,20 +192,50 @@ function InitAdmin() {
                 $("#noCategoriesDiv").hide();
                 $("#categoriesDiv").show();
             }
+            InitAdmin3();
         }
     });
 }
 
-function AddSomeCategories() {
-    alert("Not implemented");
-    //AddCategory("View Records");
-    //AddCategory("Edit Records");
+function InitAdmin3() {
+/*
+    window.Permissions = [
+        { "value": 0x00000001, "name": 'Authority to Consent' },
+*/
+
+    for (var i = 0; i < window.Permissions.length; i++) {
+        var permission = window.Permissions[i];
+        var newRow = $("#permissionsHeaderDiv").clone();
+
+        var hexTemplate = "0x00000000";
+        var val = permission.value.toString(16);
+        var res = hexTemplate.substring(0, hexTemplate.length - val.length) + val;
+
+        newRow.children("#permissionsIncludeDiv").html("<input type='checkbox' val='" + permission.value + "'></input>");
+        newRow.children("#permissionsNameDiv").text(permission.name);
+        newRow.children("#permissionsFlagsDiv").text(res);
+        newRow.appendTo("#permissionsDiv");
+    }
+    //$("#permissionsHeaderDiv").clone()
 }
 
-function AddCategory(name) {
+function AddCategoryFromUi() {
+    var permissions = [];
+    $("#permissionsDiv").find('input:checkbox').each(function () {
+        if ($(this).prop("checked")) {
+            permissions.push(Number($(this).attr("val")));
+        }
+    });
+
+    var name = console.log($("#categoryNameInput").val());
+
+    AddCategory(name, permissions);
+}
+
+function AddCategory(name, permissions) {
     var metadata = LoadContractMetadata('/contracts/Category.json');
-    var Contract = web3.eth.contract(metadata.abi);
-    var bytecode = metadata.unlinked_binary;
+    let bytecode = metadata.bytecode;
+    let MyContract = web3.eth.contract(metadata.abi);
 
     web3.eth.estimateGas({ 
         data: bytecode 
@@ -242,19 +243,37 @@ function AddCategory(name) {
         if (error) {
             alert("Unable to estimate gas");
         } else {
-            Contract.new(name, {
-                from: GetAccountAddress(),
-                data: bytecode,
-                gas: gasEstimate
-            }, function (error, instance) {
-                if (error) {
-                    alert("Error deplying new Category");
-                } else if (instance.address) {
-                    CategoryInstantiatedCallback(instance, name);
-                }
-            });
+            console.log("Gas Estimate:" + gasEstimate);
+
+            var myContractReturned = MyContract.new({
+                from:GetAccountAddress(),
+                data:bytecode,
+                gas:gasEstimate}, function(err, myContract){
+                 if(!err) {
+                    // NOTE: The callback will fire twice!
+                    // Once the contract has the transactionHash property set and once its deployed on an address.
+             
+                    // e.g. check tx hash on the first call (transaction send)
+                    if(!myContract.address) {
+                        console.log("Tx hash: " + myContract.transactionHash) // The hash of the transaction, which deploys the contract
+                    
+                    // check address on the second call (contract deployed)
+                    } else {
+                        console.log("Contract address: " + myContract.address) // the contract address
+                    }
+             
+                    // Note that the returned "myContractReturned" === "myContract",
+                    // so the returned "myContractReturned" object will also get the address set.
+                 }
+               });
         }
     });
+    
+
+
+
+
+
 }
 
 function CategoryInstantiatedCallback(instance, name) {

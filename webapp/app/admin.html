@@ -1,74 +1,80 @@
 <!doctype html>
 <html lang="">
-  <head>
-    <meta charset="utf-8">
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Consent Directives</title>
 
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <!-- Place favicon.ico in the root directory -->
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Consent Directives</title>
 
-    <!-- build:css styles/vendor.css -->
-    <!-- bower:css -->
-    <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css" />
-    <!-- endbower -->
-    <!-- endbuild -->
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <!-- Place favicon.ico in the root directory -->
 
-    <!-- build:css styles/main.css -->
-    <link rel="stylesheet" href="styles/main.css">
-    <!-- endbuild -->
-    
-  </head>
-  <body>
-    <!--[if IE]>
+  <!-- build:css styles/vendor.css -->
+  <!-- bower:css -->
+  <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css" />
+  <!-- endbower -->
+  <!-- endbuild -->
+
+  <!-- build:css styles/main.css -->
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- endbuild -->
+
+</head>
+
+<body>
+  <!--[if IE]>
       <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
-    
-    <div class="container">
-      <div class="header">
-        <ul class="nav nav-pills pull-right">
-          <li>
-            <a href="index.html">Patient</a>
-          </li>
-          <li>
-            <a href="external.html">External</a>
-          </li>
-          <li class="active">
-            <a href="admin.html">Admin</a>
-          </li>
-        </ul>
-        <h3 class="text-muted">Admin Access</h3>
-      </div>
 
-      <div id="adminDiv" style="display:none">
-        <h4>Categories</h4>
+  <div class="container">
+    <div class="header">
+      <ul class="nav nav-pills pull-right">
+        <li>
+          <a href="index.html">Patient</a>
+        </li>
+        <li>
+          <a href="external.html">External</a>
+        </li>
+        <li class="active">
+          <a href="admin.html">Admin</a>
+        </li>
+      </ul>
+      <h3 class="text-muted">Admin Access</h3>
+    </div>
 
-        <div id="noCategoriesDiv" style="display:none">
-          <h5>No categories have been found. <a href="#" onclick="AddSomeCategories()">Add some.</a></h5>
-        </div>
-        <div id="categoriesDiv" style="display:none">
-          <h3>Categories available:</h3>
+    <div id="adminDiv" style="display:none">
+      <h4>Categories</h4>
+
+      <div id="noCategoriesDiv" style="display:none">
+
+        <div id="categoriesManagementDiv">
+          <div id="permissionsDiv">
+            <div id="permissionsHeaderDiv" class="row">
+              <div id="permissionsIncludeDiv" class="col-lg-1">
+                <b>Include</b>
+              </div>
+              <div id="permissionsNameDiv" class="col-lg-3">
+                <b>Name</b>
+              </div>
+              <div id="permissionsFlagsDiv" class="col-lg-4">
+                <b>Flags</b>
+              </div>
+            </div>
+          </div>
+
           <div class="row">
-              <div class="col-lg-6">
-                <div class="input-group">
-                  <input type="text" class="form-control" placeholder="Category Name">
-                  <span class="input-group-btn">
-                    <button class="btn btn-default" type="button">Add Category</button>
-                  </span>
-                </div>
+            <div class="col-lg-6">
+              <div class="input-group">
+                <input type="text" class="form-control" id="categoryNameInput" placeholder="Category name...">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button" onclick="AddCategoryFromUi()">Add</button>
+                </span>
               </div>
             </div>
-            <div class="row">
-              <div class="col-lg-6">
-                <div class="input-group">
-                  <span class="input-group-addon">
-                    <input type="checkbox" aria-label="...">
-                  </span>
-                  <input type="text" class="form-control" aria-label="..." value="Description" disabled>
-                </div>
-              </div>
-            </div>
+          </div>
+
+
         </div>
 
       </div>
@@ -78,16 +84,21 @@
       </div>
 
       <div class="footer">
-        <p><b><span id="accountName">Unkown</span></b> @ <span id="accountAddress">0x000000...</span></p>
+        <p>
+          <b>
+            <span id="accountName">Unkown</span>
+          </b> @
+          <span id="accountAddress">0x000000...</span>
+        </p>
       </div>
     </div>
-    
+
     <!-- build:js scripts/vendor.js -->
     <!-- bower:js -->
     <script src="/bower_components/jquery/dist/jquery.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
-    
+
     <!-- build:js scripts/plugins.js -->
     <script src="/bower_components/bootstrap/js/affix.js"></script>
     <script src="/bower_components/bootstrap/js/alert.js"></script>
@@ -102,7 +113,7 @@
     <script src="/bower_components/bootstrap/js/collapse.js"></script>
     <script src="/bower_components/bootstrap/js/tab.js"></script>
     <!-- endbuild -->
-    
+
     <script src="/bower_components/web3/dist/web3.min.js"></script>
 
     <!-- build:js scripts/main.js -->
@@ -113,6 +124,7 @@
       Init();
       InitAdmin();
     </script>
-    
-  </body>
+
+</body>
+
 </html>
