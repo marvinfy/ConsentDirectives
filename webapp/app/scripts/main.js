@@ -198,10 +198,10 @@ function InitAdmin2() {
 }
 
 function InitAdmin3() {
-/*
-    window.Permissions = [
-        { "value": 0x00000001, "name": 'Authority to Consent' },
-*/
+    /*
+        window.Permissions = [
+            { "value": 0x00000001, "name": 'Authority to Consent' },
+    */
 
     for (var i = 0; i < window.Permissions.length; i++) {
         var permission = window.Permissions[i];
@@ -237,8 +237,8 @@ function AddCategory(name, permissions) {
     let bytecode = metadata.bytecode;
     let MyContract = web3.eth.contract(metadata.abi);
 
-    web3.eth.estimateGas({ 
-        data: bytecode 
+    web3.eth.estimateGas({
+        data: bytecode
     }, function (error, gasEstimate) {
         if (error) {
             alert("Unable to estimate gas");
@@ -246,54 +246,41 @@ function AddCategory(name, permissions) {
             console.log("Gas Estimate:" + gasEstimate);
 
             var myContractReturned = MyContract.new({
-                from:GetAccountAddress(),
-                data:bytecode,
-                gas:gasEstimate}, function(err, myContract){
-                 if(!err) {
-                    // NOTE: The callback will fire twice!
-                    // Once the contract has the transactionHash property set and once its deployed on an address.
-             
-                    // e.g. check tx hash on the first call (transaction send)
-                    if(!myContract.address) {
-                        console.log("Tx hash: " + myContract.transactionHash) // The hash of the transaction, which deploys the contract
-                    
-                    // check address on the second call (contract deployed)
+                from: GetAccountAddress(),
+                data: bytecode,
+                gas: gasEstimate
+            }, function (err, myContract) {
+                if (!err) {
+                    if (!myContract.address) {
+                        console.log("Tx hash: " + myContract.transactionHash);
                     } else {
-                        console.log("Contract address: " + myContract.address) // the contract address
+                        console.log("Contract address: " + myContract.address);
+
+                        CategoryCatalog.Add(myContract.address, function (error, result) {
+                            if (error) {
+                                console.log('Error adding category to the catalog'); 
+                            } else {
+                                console.log('Category added to the catalog'); 
+                                AddPermissions(myContract, permissions);
+                            }
+                        });
                     }
-             
-                    // Note that the returned "myContractReturned" === "myContract",
-                    // so the returned "myContractReturned" object will also get the address set.
-                 }
-               });
+                }
+            });
         }
     });
-    
-
-
-
-
-
 }
 
-function CategoryInstantiatedCallback(instance, name) {
-    var batch = web3.createBatch();
-
-    /*if (name == "View Records") {
-
-        batch.add(instance.AddConsentData.request(0x0010, function(error, result) { if (error) { alert('error'); }}));
-        batch.add(instance.AddConsentData.request(0x0020, function(error, result) { if (error) { alert('error'); }}));
-        batch.add(instance.AddConsentData.request(0x0040, function(error, result) { if (error) { alert('error'); }}));
-        batch.add(CategoryCatalog.Add.request(instance.address, function(error, result) {
-            alert('added2');
-        }));
-        batch.execute();
-    } else if (name == "Edit Records") {
-        batch.add(instance.AddConsentData.request(0x0020, function(error, result) { if (error) { alert('error'); }}));
-        batch.add(instance.AddConsentData.request(0x0040, function(error, result) { if (error) { alert('error'); }}));
-        batch.add(CategoryCatalog.Add.request(instance.address, function(error, result) {
-            alert('added3');
-        }));
-        batch.execute();    
-    }*/
+function AddPermissions(category, permissions) {
+    for (var i = 0; i < permissions.length; i++) {
+        console.log('Will add consent data -- ' + permissions[i]);
+        category.AddConsentData(permissions[i], function(error, result) { 
+            if (error) { 
+                console.log('Error adding consent data'); 
+            }
+            else {
+                console.log('Consent data added'); 
+            }
+        });
+    }
 }

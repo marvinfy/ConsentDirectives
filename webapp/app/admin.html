@@ -46,35 +46,38 @@
     <div id="adminDiv" style="display:none">
       <h4>Categories</h4>
 
-      <div id="noCategoriesDiv" style="display:none">
-
-        <div id="categoriesManagementDiv">
-          <div id="permissionsDiv">
-            <div id="permissionsHeaderDiv" class="row">
-              <div id="permissionsIncludeDiv" class="col-lg-1">
-                <b>Include</b>
-              </div>
-              <div id="permissionsNameDiv" class="col-lg-3">
-                <b>Name</b>
-              </div>
-              <div id="permissionsFlagsDiv" class="col-lg-4">
-                <b>Flags</b>
-              </div>
+      <div id="categoriesManagementDiv">
+        <div id="permissionsDiv">
+          <div id="permissionsHeaderDiv" class="row">
+            <div id="permissionsIncludeDiv" class="col-lg-1">
+              <b>Include</b>
+            </div>
+            <div id="permissionsNameDiv" class="col-lg-3">
+              <b>Name</b>
+            </div>
+            <div id="permissionsFlagsDiv" class="col-lg-4">
+              <b>Flags</b>
             </div>
           </div>
+        </div>
 
-          <div class="row">
-            <div class="col-lg-6">
-              <div class="input-group">
-                <input type="text" class="form-control" id="categoryNameInput" placeholder="Category name...">
-                <span class="input-group-btn">
-                  <button class="btn btn-default" type="button" onclick="AddCategoryFromUi()">Add</button>
-                </span>
-              </div>
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="input-group">
+              <input type="text" class="form-control" id="categoryNameInput" placeholder="Category name...">
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="button" onclick="AddCategoryFromUi()">Add</button>
+              </span>
             </div>
           </div>
+        </div>
 
+        <div id="noCategoriesDiv" style="display:none">
+          <h5>No categories found</h5>
+        </div>
 
+        <div id="categoriesDiv" style="display:none">
+          <h5>Categories found</h5>
         </div>
 
       </div>
