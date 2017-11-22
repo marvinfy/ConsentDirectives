@@ -23,10 +23,6 @@
 </head>
 
 <body>
-  <!--[if IE]>
-      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
-
   <div class="container">
 
     <div class="header">
@@ -45,12 +41,12 @@
     </div>
 
     <div class="row">
-      <div class="col-lg-5">
+      <div class="col-lg-4">
         <h4>
           <span id="patientHeading"></span>
         </h4>
       </div>
-      <div class="col-lg-2">
+      <div class="col-lg-6">
         <div class="btn-group">
           <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Action
@@ -68,25 +64,48 @@
       </div>
     </div>
 
-    <div class="row" id="manageConsentDirectivesDiv" style="display:none">
-      <div class="col-lg-5">
-        <h4>Manage Consent Directives</h4>
-      </div>
-      <div class="col-lg-2">
-        <div class="btn-group" role="group" aria-label="...">
-          <div class="btn-group" role="group">
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Actor
-              <span class="caret"></span>
-            </button>
-            <ul id="actorsDdm" class="dropdown-menu">
-              <li id="actorTemplateDdi" style="display:none"><a href="#"></a></li>
-            </ul>
+    <div id="manageConsentDirectivesDiv" style="display:none">
+
+      <div class="row">
+        <div class="col-lg-4">
+          <h4>Consent Directives</h4>
+        </div>
+        <div class="col-lg-6">
+          <div class="btn-group" role="group" aria-label="...">
+            <div class="btn-group" role="group">  
+              <button type="button" class="btn btn-default">Save</button>
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span id="actorNameDDL"></span>
+                <span class="caret"></span>
+              </button>
+              <ul id="actorsDdm" class="dropdown-menu">
+                <li id="actorTemplateDdi" style="display:none">
+                  <a href="#"></a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
-
       </div>
+
+      <div id="permissionsDiv">
+        <div id="permissionsHeaderDiv" class="row">
+          <div id="permissionsIncludeDiv" class="col-lg-1">
+            <b>Include</b>
+          </div>
+          <div id="permissionsNameDiv" class="col-lg-3">
+            <b>Permission</b>
+          </div>
+          <div id="permissionsFlagsDiv" class="col-lg-4">
+            <b>Bit Flag</b>
+          </div>
+        </div>
+      </div>
+
     </div>
+
+
+
 
     <div class="footer">
       <p>

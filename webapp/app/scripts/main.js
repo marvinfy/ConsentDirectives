@@ -107,6 +107,15 @@ function GetAccountName() {
     }
 }
 
+function GetAccountNameAt(address) {
+    for (var i = 0; i < Accounts.accounts.length; i++) {
+        if (Accounts.accounts[i].address == address) {
+            return Accounts.accounts[i].name;
+        }
+    }
+    return "Unknown";
+}
+
 function GetAccountAddress() {
     if (web3.eth.accounts.length != 1) {
         return "unknown";
@@ -128,7 +137,7 @@ function InitPatient() {
                 $("#destroyButton").attr('class', 'disabled');
                 $("#manageConsentDirectivesDiv").attr('style', 'display:none');
             } else {
-                $("#patientHeading").text('Patient @ ' + address.substring(0, 13) + '...');
+                $("#patientHeading").text('Patient @ ' + address.substring(0, 7) + '...');
                 $("#createButton").attr('class', 'disabled');
                 $("#destroyButton").attr('class', '');
                 $("#manageConsentDirectivesDiv").attr('style', '');
@@ -143,6 +152,8 @@ function InitPatient() {
 
                         window.Patient = instance;
                         LoadDDLActors();
+                        InitPermissionsHeaderDiv();
+                        LoadActor(Accounts.accounts[0].address)
                     }
                 });
 
@@ -169,13 +180,14 @@ function LoadDDLActors() {
             link.text(account.name);
         }
 
-        
         link.attr('OnClick', 'LoadActor("' + account.address + '");');
     }
 }
 
 function LoadActor(address) {
     console.log('Actor address: ' + address);
+
+    $("#actorNameDDL").text(GetAccountNameAt(address));
 
     Patient.GetConsentDirectives.call(function (error, directives) {
         if (error) {
@@ -269,12 +281,13 @@ function InitAdmin2() {
                 $("#noCategoriesDiv").hide();
                 $("#categoriesDiv").show();
             }
-            InitAdmin3();
+            InitPermissionsHeaderDiv();
+            LoadCategories();
         }
     });
 }
 
-function InitAdmin3() {
+function InitPermissionsHeaderDiv() {
     for (var i = 0; i < window.Permissions.length; i++) {
         var permission = window.Permissions[i];
         var newRow = $("#permissionsHeaderDiv").clone();
@@ -288,8 +301,6 @@ function InitAdmin3() {
         newRow.children("#permissionsFlagsDiv").text(res);
         newRow.appendTo("#permissionsDiv");
     }
-
-    LoadCategories();
 }
 
 function AddCategoryFromUi() {
