@@ -118,22 +118,34 @@ function GetAccountAddress() {
  * Patient functions
  */
 function InitPatient() {
-    PatientFactory.GetPatient.call(function (error, result) {
+    PatientFactory.GetPatient.call(function (error, address) {
         if (error) {
             alert('GetPatient call failed');
         } else {
-            if (Number(result) == 0) {
+            if (Number(address) == 0) {
                 $("#patientHeading").text("You're not a patient");
                 $("#createButton").attr('class', '');
                 $("#destroyButton").attr('class', 'disabled');
                 $("#manageConsentDirectivesDiv").attr('style', 'display:none');
             } else {
-                $("#patientHeading").text('Patient @ ' + result.substring(0, 13) + '...');
+                $("#patientHeading").text('Patient @ ' + address.substring(0, 13) + '...');
                 $("#createButton").attr('class', 'disabled');
                 $("#destroyButton").attr('class', '');
                 $("#manageConsentDirectivesDiv").attr('style', '');
 
-                LoadDDLActors();
+                var patientMetadata = LoadContractMetadata('/contracts/Patient.json');
+                var patientContract = web3.eth.contract(patientMetadata.abi);
+                patientContract.at(address, function (error, instance) {
+                    if (error) {
+                        console.log('Unable to load Patient @ ' + address);
+                    } else {
+                        console.log('Loaded Patient @ ' + address);
+
+                        window.Patient = instance;
+                        LoadDDLActors();
+                    }
+                });
+
             }
         }
     });
@@ -142,18 +154,36 @@ function InitPatient() {
 function LoadDDLActors() {
     for (var i = 0; i < Accounts.accounts.length; i++) {
         var account = Accounts.accounts[i];
+
         var newItem = $("#actorTemplateDdi").clone();
+
         newItem.attr('style', '');
         newItem.appendTo("#actorsDdm");
 
         var link = newItem.children(":first");
-        link.text(account.name);
-        link.attr('OnClick', 'LoadActor(' + account.address + ');');
+
+        if (GetAccountAddress() == account.address) {
+            newItem.attr('class', 'disabled');    
+            link.text(account.name + "");
+        } else {
+            link.text(account.name);
+        }
+
+        
+        link.attr('OnClick', 'LoadActor("' + account.address + '");');
     }
 }
 
 function LoadActor(address) {
-    console.log(address);
+    console.log('Actor address: ' + address);
+
+    Patient.GetConsentDirectives.call(function (error, directives) {
+        if (error) {
+            console.log('GetConsentDirectives call failed');
+        } else {
+            console.log('Consent Directives Retrieved: ' + directives.length);
+        }
+    });
 }
 
 function CreatePatient() {
