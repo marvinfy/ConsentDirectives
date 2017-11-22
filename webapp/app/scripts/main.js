@@ -126,13 +126,34 @@ function InitPatient() {
                 $("#patientHeading").text("You're not a patient");
                 $("#createButton").attr('class', '');
                 $("#destroyButton").attr('class', 'disabled');
+                $("#manageConsentDirectivesDiv").attr('style', 'display:none');
             } else {
-                $("#patientHeading").text('Patient @ ' + result.substring(0, 9) + '...');
+                $("#patientHeading").text('Patient @ ' + result.substring(0, 13) + '...');
                 $("#createButton").attr('class', 'disabled');
                 $("#destroyButton").attr('class', '');
+                $("#manageConsentDirectivesDiv").attr('style', '');
+
+                LoadDDLActors();
             }
         }
     });
+}
+
+function LoadDDLActors() {
+    for (var i = 0; i < Accounts.accounts.length; i++) {
+        var account = Accounts.accounts[i];
+        var newItem = $("#actorTemplateDdi").clone();
+        newItem.attr('style', '');
+        newItem.appendTo("#actorsDdm");
+
+        var link = newItem.children(":first");
+        link.text(account.name);
+        link.attr('OnClick', 'LoadActor(' + account.address + ');');
+    }
+}
+
+function LoadActor(address) {
+    console.log(address);
 }
 
 function CreatePatient() {
@@ -299,7 +320,6 @@ function AddPermissions(category, permissions) {
         }
     });
  
-    var count = 0;
     for (var i = 0; i < permissions.length; i++) {
         console.log('Will add consent data -- ' + permissions[i]);
         category.AddConsentData(permissions[i], function(error, result) { 
@@ -308,11 +328,7 @@ function AddPermissions(category, permissions) {
             }
             else {
                 console.log('Consent data added'); 
-                count++;
-
-                if (count == permissions.length) {
-                    LoadCategories();
-                }
+                LoadCategories();
             }
         });
     }
