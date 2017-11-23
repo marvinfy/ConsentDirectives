@@ -184,26 +184,162 @@ function LoadDDLActors() {
     }
 }
 
-function LoadActor(address) {
-    console.log('Actor address: ' + address);
+function LoadActor(pAddress) {
+    console.log('Actor address: ' + pAddress);
 
-    $("#actorNameDDL").text(GetAccountNameAt(address));
+    window.CurrentActorAddress = pAddress;
+
+    $("#actorNameDDL").text(GetAccountNameAt(pAddress));
 
     Patient.GetConsentDirectives.call(function (error, directives) {
         if (error) {
-            console.log('GetConsentDirectives call failed');
+            console.error('GetConsentDirectives call failed');
         } else {
-            console.log('Consent Directives Retrieved: ' + directives.length);
+            window.ConsentDirectives = directives;
+
+            FindFirstConsentDirectiveFor(pAddress).then(function(instance) {
+                if (instance == null) {
+                    console.info('First Consent Directive NOT found for actor ' + pAddress);
+                    window.ConsentDirective = null;
+                } else {
+                    console.info('First Consent Directive found for actor ' + pAddress);
+                    window.ConsentDirective = instance;
+
+                    instance.What.call(function(error, what) {
+                        if (error) {
+                            console.error("Error loading bit flags");
+                        } else {
+                            $('#permissionsContentDiv').each(function() {
+                                $(this).find('input:checkbox').prop('checked', true);
+                                console.log('a');
+                            });
+                            /*
+
+                            $("#permissionsDiv").find('input:checkbox').each(function () {
+                                if ($(this).prop("checked")) {
+                                    permissions.push(Number($(this).attr("val")));
+                                }
+                            });
+
+                                    var hexTemplate = "0x00000000";
+                                    var val = permission.value.toString(16);
+                                    var res = hexTemplate.substring(0, hexTemplate.length - val.length) + val;
+                            
+                                    newRow.children("#permissionsIncludeDiv").html("<input type='checkbox' val='" + permission.value + "'></input>");
+                                    newRow.children("#permissionsNameDiv").text(permission.name);
+                                    newRow.children("#permissionsFlagsDiv").text(res);
+                                    newRow.appendTo("#permissionsDiv");
+*/
+
+
+
+                        }
+                    });
+                }
+            });
         }
     });
 }
 
+function SaveConsentDirective() {
+
+    var what = 0;
+
+    $("#permissionsDiv").find('input:checkbox').each(function () {
+        if ($(this).prop("checked")) {
+            what += Number($(this).attr("val"));
+        }
+    });
+
+    var metadata = LoadContractMetadata('/contracts/ConsentDirective.json');
+    let bytecode = metadata.bytecode;
+    let consentDirectiveContract = web3.eth.contract(metadata.abi);
+
+    if (ConsentDirective != null) {
+        console.info('ConsentDirective already exists, updating. Actor: ' + CurrentActorAddress);
+    } else {
+        console.info('Creating empty ConsentDirective for actor ' + CurrentActorAddress);
+        web3.eth.estimateGas({
+            data: bytecode
+        }, function (error, gasEstimate) {
+            if (error) {
+                alert("Unable to estimate gas");
+            } else {
+                consentDirectiveContract.new(CurrentActorAddress, what, {
+                    from: GetAccountAddress(),
+                    data: bytecode,
+                    gas: gasEstimate * 2}, function (err, myContract) {
+                    if (!err) {
+                        if (!myContract.address) {
+                            console.log("Tx hash: " + myContract.transactionHash);
+                        } else {
+                            console.log("Contract address: " + myContract.address);
+
+                            window.ConsentDirective = myContract;
+
+                            Patient.AddConsentDirective(myContract.address, function (error, result) {
+                                if (error) {
+                                    console.error('Error adding consent directive to patient'); 
+                                } else {
+                                    console.info('Consent Directive added to patient'); 
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    }
+}    
+
+async function FindFirstConsentDirectiveFor(pActor) {
+    var metadata = LoadContractMetadata('/contracts/ConsentDirective.json');
+    let bytecode = metadata.bytecode;
+    let consentDirectiveContract = web3.eth.contract(metadata.abi);
+
+    var instance;
+
+    for (var i = 0; i < ConsentDirectives.length; i++) {
+        instance = await consentDirectiveContract.at(ConsentDirectives[i], function(error, _instance) {
+            if (error) {
+                return null;
+            } else {
+                return _instance;
+            }
+        });
+
+        if (instance == null) {
+            continue;
+        }
+
+        console.log(instance);
+
+        const who = await instance.Who.call(function(error, _who) {
+            if (error) {
+                return null;
+            } else {
+                console.error(_who);
+                return _who;
+            }
+        });
+
+        
+
+        if (who == pActor) {
+            return instance;
+        }
+    }
+
+    return null;
+}
+
+
 function CreatePatient() {
     PatientFactory.MakePatient(function (error, result) {
         if (error) {
-            alert('MakePatient transaction failed');
+            console.error('MakePatient transaction failed');
         } else {
-            setTimeout(ReloadPage, 2000);
+            setTimeout(ReloadPage, 2500);
         }
     });
 }
@@ -291,6 +427,7 @@ function InitPermissionsHeaderDiv() {
     for (var i = 0; i < window.Permissions.length; i++) {
         var permission = window.Permissions[i];
         var newRow = $("#permissionsHeaderDiv").clone();
+        newRow.attr('id', 'permissionsContentDiv');
 
         var hexTemplate = "0x00000000";
         var val = permission.value.toString(16);
