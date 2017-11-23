@@ -196,49 +196,31 @@ function LoadActor(pAddress) {
             console.error('GetConsentDirectives call failed');
         } else {
             window.ConsentDirectives = directives;
-
-            FindFirstConsentDirectiveFor(pAddress).then(function(instance) {
-                if (instance == null) {
-                    console.info('First Consent Directive NOT found for actor ' + pAddress);
-                    window.ConsentDirective = null;
-                } else {
-                    console.info('First Consent Directive found for actor ' + pAddress);
-                    window.ConsentDirective = instance;
-
-                    instance.What.call(function(error, what) {
-                        if (error) {
-                            console.error("Error loading bit flags");
-                        } else {
-                            $('#permissionsContentDiv').each(function() {
-                                $(this).find('input:checkbox').prop('checked', true);
-                                console.log('a');
-                            });
-                            /*
-
-                            $("#permissionsDiv").find('input:checkbox').each(function () {
-                                if ($(this).prop("checked")) {
-                                    permissions.push(Number($(this).attr("val")));
-                                }
-                            });
-
-                                    var hexTemplate = "0x00000000";
-                                    var val = permission.value.toString(16);
-                                    var res = hexTemplate.substring(0, hexTemplate.length - val.length) + val;
-                            
-                                    newRow.children("#permissionsIncludeDiv").html("<input type='checkbox' val='" + permission.value + "'></input>");
-                                    newRow.children("#permissionsNameDiv").text(permission.name);
-                                    newRow.children("#permissionsFlagsDiv").text(res);
-                                    newRow.appendTo("#permissionsDiv");
-*/
-
-
-
-                        }
-                    });
-                }
-            });
+            FindFirstConsentDirectiveFor(pAddress, ContinueLoadingActor);
         }
     });
+}
+
+function ContinueLoadingActor() {
+
+    if (ConsentDirective.address == null) {
+        console.error('ContinueLoadingActor -- First Consent Directive NOT found');
+    } else {
+        console.info('ContinueLoadingActor -- continuing with CD@' + window.ConsentDirective.address);
+
+        ConsentDirective.What.call(function(error, flags) {
+            if (error) {
+                console.error("Error loading bit flags");
+            } else {
+                /*$('#permissionsContentDiv').each(function() {
+                    $(this).find('input:checkbox').prop('checked', true);
+                    console.log('a');
+                });*/
+                console.log(flags.toNumber());
+            }
+        });
+
+    }
 }
 
 function SaveConsentDirective() {
@@ -257,6 +239,15 @@ function SaveConsentDirective() {
 
     if (ConsentDirective != null) {
         console.info('ConsentDirective already exists, updating. Actor: ' + CurrentActorAddress);
+
+        ConsentDirective.SetWhat(what, function(error, result) {
+            if (error) {
+                console.error('Error updating consent directive'); 
+            } else {
+                console.info('Consent Directive updated'); 
+            }
+        });
+
     } else {
         console.info('Creating empty ConsentDirective for actor ' + CurrentActorAddress);
         web3.eth.estimateGas({
@@ -292,45 +283,32 @@ function SaveConsentDirective() {
     }
 }    
 
-async function FindFirstConsentDirectiveFor(pActor) {
+async function FindFirstConsentDirectiveFor(pActor, f) {
     var metadata = LoadContractMetadata('/contracts/ConsentDirective.json');
     let bytecode = metadata.bytecode;
     let consentDirectiveContract = web3.eth.contract(metadata.abi);
 
-    var instance;
+    window.ConsentDirective = null;
 
     for (var i = 0; i < ConsentDirectives.length; i++) {
-        instance = await consentDirectiveContract.at(ConsentDirectives[i], function(error, _instance) {
+        let cd = await consentDirectiveContract.at(ConsentDirectives[i], function(error, instance) {
             if (error) {
-                return null;
+                console.error('Error loading Consent Directive');
             } else {
-                return _instance;
+                return instance;
             }
         });
 
-        if (instance == null) {
-            continue;
-        }
-
-        console.log(instance);
-
-        const who = await instance.Who.call(function(error, _who) {
+        let who = await cd.GetTheWho.call(function(error, who) {
             if (error) {
-                return null;
-            } else {
-                console.error(_who);
-                return _who;
+                console.error('Error Getting Who');
+            } else if (pActor == who) {
+                window.ConsentDirective = cd;
+                console.log('CD@' + window.ConsentDirective.address + ' for actor@' + pActor + ' found');
+                f();
             }
         });
-
-        
-
-        if (who == pActor) {
-            return instance;
-        }
     }
-
-    return null;
 }
 
 

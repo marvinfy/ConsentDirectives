@@ -5,6 +5,7 @@ contract ConsentDirective {
   // To whom the Patient is giving consent
   address public Who; 
   function SetWho(address who) { Who = who; }
+  function GetTheWho() constant returns (address) { return Who; }
 
   // The semantics of the What are specified by the system administrator
   // All bits except the four least significant bits are of general purpose
